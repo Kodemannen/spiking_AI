@@ -25,16 +25,24 @@ def Plot_connectome(population, positions, connections, ax):
         gid_sender = synapse[0]
         gid_receiver = synapse[1]
 
-        index_sender = np.where()
-        index_receiver
+        index_sender = np.argwhere(gid_sender==pop_gids)
+        index_receiver = np.argwhere(gid_receiver==pop_gids)
+        print(index_sender)
+        print(index_receiver)
 
-        sender_position = positions[synapse[0]-1]
-        receiver_position = positions[synapse[1]-1]
+        index_sender = np.argwhere(gid_sender==pop_gids)[0,0]
+        index_receiver = np.argwhere(gid_receiver==pop_gids)[0,0]
+        print(index_sender)
+        print(index_receiver)
 
-        xs = [sender_position[0], receiver_position[0]]
-        ys = [sender_position[1], receiver_position[1]]
+        sender_position = positions[index_sender]
+        receiver_position = positions[index_receiver]
+
+        xs = [sender_position[0], receiver_position[0]] # The x-coordinates of the pair of neurons
+        ys = [sender_position[1], receiver_position[1]] # Ditto but for the y-coordinates
 
         ax.plot(xs,ys, linewidth=0.1, alpha=0.2, color="grey")
+
 
     # Plotting neurons:
     ax.scatter(*zip(*positions), alpha=.7, color="grey")
