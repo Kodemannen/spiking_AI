@@ -18,22 +18,24 @@ def Plot_connectome(population, positions, connections, ax):
 
     n_connections = len(connections)
 
-
     for i in range(n_connections):
 
         synapse = connections[i] # Synapse number i in the network. (source-gid, target-gid, target-thread, synapse-id, port)
         gid_sender = synapse[0]
         gid_receiver = synapse[1]
+        print(gid_sender)
+        print(gid_receiver)
 
-        index_sender = np.argwhere(gid_sender==pop_gids)
-        index_receiver = np.argwhere(gid_receiver==pop_gids)
+        index_sender = np.argwhere((gid_sender)==pop_gids) # index in population
+        index_receiver = np.argwhere((gid_receiver)==pop_gids)
         print(index_sender)
         print(index_receiver)
+        print(pop_gids)
+        print(len(pop_gids))
+        print("horeslut")
 
         index_sender = np.argwhere(gid_sender==pop_gids)[0,0]
         index_receiver = np.argwhere(gid_receiver==pop_gids)[0,0]
-        print(index_sender)
-        print(index_receiver)
 
         sender_position = positions[index_sender]
         receiver_position = positions[index_receiver]
@@ -76,6 +78,7 @@ if __name__ == "__main__":
     plot = True
     epsilon = 0.1
     indegree = 10
+    outdegree = 30
     sensory_rate = 10.0 # Hz?
 
     nest.SetKernelStatus({"overwrite_files": True})
@@ -97,14 +100,17 @@ if __name__ == "__main__":
       ###########################
      # Setting up connections: #
     ###########################
-    nest.Connect(population_sensory, spike_detector)
     nest.Connect(population_main, population_main, conn_spec={"rule": "fixed_indegree", "indegree": indegree})
     nest.Connect(poisson_generator, population_sensory)
+    nest.Connect(population_sensory, population_main, conn_spec={"rule": "fixed_outdegree", "outdegree": outdegree})
 
     # Fetching connectons for plotting:
-    connections_main    = nest.GetConnections(target=population_main)
-    connections_sensory = nest.GetConnections(target=population_sensory)
+    connections_main    = nest.GetConnections(source=population_main, target=population_main)
+    connections_sensory = nest.GetConnections(source=population_sensory)
     # connections_..[i] is connection number i in the list of connections in the network? Can be given with an argument source=arg or target=arg. (source-gid, target-gid, target-thread, synapse-id, port)
+
+    # Connecting spike detector
+    nest.Connect(population_sensory, spike_detector)
 
 
 
