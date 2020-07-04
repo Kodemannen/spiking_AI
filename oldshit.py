@@ -1,4 +1,10 @@
 import matplotlib.pyplot as plt
+import multiprocessing as mp
+import nest
+nest.set_verbosity("M_WARNING")
+import numpy as np
+from joblib import delayed, Parallel
+import json
 import numpy as np
 import nest.topology as topp
 import nest
@@ -9,8 +15,10 @@ np.random.seed(10)
 sns.set()
 
 
+
 def Plot_connectome(population, positions, connections, ax):
 
+    #-----------------------------------------------
     # Plotting connections:
     pop_size = len(population)
     pop_indices = np.arange(pop_size)
@@ -20,7 +28,9 @@ def Plot_connectome(population, positions, connections, ax):
 
     for i in range(n_connections):
 
-        synapse = connections[i] # Synapse number i in the network. (source-gid, target-gid, target-thread, synapse-id, port)
+        synapse = connections[i] # Synapse number i in the network.
+        # shape = (source-gid, target-gid, target-thread, synapse-id, port)
+
         gid_sender = synapse[0]
         gid_receiver = synapse[1]
         print(gid_sender)
@@ -54,11 +64,14 @@ def Plot_connectome(population, positions, connections, ax):
 
 
 def Create_population_positions(N, distribution):
+    # distribution[i] is a list [j,k], representing that neuron i has position (j,k)
 
     if distribution.lower()=="uniform":
-        positions = np.random.uniform(low=0, high=1, size=(N, 2)) # the i'th list [j,k] means neuron i had position (j,k)
+        positions = np.random.uniform(low=0, high=1, size=(N, 2))
+
     elif distribution.lower()=="gaussian":
-        positions = np.random.normal(loc=0, scale=1, size=(N, 2)) # the i'th list [j,k] means neuron i had position (j,k)
+        positions = np.random.normal(loc=0, scale=1, size=(N, 2))
+
     elif distribution.lower()=="column":
         positions = np.zeros(shape=(N,2))
         positions[:,1] = np.linspace(-1,1,N)
@@ -67,11 +80,10 @@ def Create_population_positions(N, distribution):
 
 
 
-if __name__ == "__main__":
+def rush_b():
 
-      ####################
-     # Hyperparameters: #
-    ####################
+    #-----------------------------------------------
+    # Hyperparameters:
     simtime = 100.0 # ms
     N_main = 100 # number of neurons
     N_sensory = 20
@@ -84,39 +96,40 @@ if __name__ == "__main__":
     nest.SetKernelStatus({"overwrite_files": True})
 
 
-      ############################################
-     # Creating network and experimental tools: #
-    ############################################
+    #-----------------------------------------------
+    # Creating network and experimental tools:
+
     # Neuron populations:
     population_main    = nest.Create("iaf_psc_delta", N_main)
     population_sensory = nest.Create("parrot_neuron", N_sensory)
     poisson_generator  = nest.Create("poisson_generator")
 
     spike_detector = nest.Create("spike_detector", params={"to_file":True,"label":"spike_times.txt"})
-    # Spike_detector is a device needed for gathering the spikes of the particular neurons we are interested in
 
+    # recurrent connections in main pop:
+    nest.Connect(population_main, population_main,
+                conn_spec={"rule": "fixed_indegree", "indegree": indegree})
 
-
-      ###########################
-     # Setting up connections: #
-    ###########################
-    nest.Connect(population_main, population_main, conn_spec={"rule": "fixed_indegree", "indegree": indegree})
-    nest.Connect(poisson_generator, population_sensory)
-    nest.Connect(population_sensory, population_main, conn_spec={"rule": "fixed_outdegree", "outdegree": outdegree})
+    # connecting sensory pop to main pop:
+    nest.Connect(population_sensory, population_main,
+                 conn_spec={"rule": "fixed_outdegree", "outdegree": outdegree})
 
     # Fetching connectons for plotting:
     connections_main    = nest.GetConnections(source=population_main, target=population_main)
     connections_sensory = nest.GetConnections(source=population_sensory)
-    # connections_..[i] is connection number i in the list of connections in the network? Can be given with an argument source=arg or target=arg. (source-gid, target-gid, target-thread, synapse-id, port)
+    # connections_..[i] is connection number i in the list of connections in the network?
+    # shape of element connections_..[i] = (source-gid, target-gid, target-thread, synapse-id, port)
 
-    # Connecting spike detector
+    # Connecting input stimulus:
+    nest.Connect(poisson_generator, population_sensory)
+
+    # Connecting spike detector to detect spikes:
     nest.Connect(population_sensory, spike_detector)
 
 
 
-      #########################
-     # Setting up positions: #
-    #########################
+    #-----------------------------------------------
+    # Setting up positions:
     positions_main    = Create_population_positions(N_main, distribution="gaussian")
     positions_sensory = Create_population_positions(N_sensory, distribution="column")
 
@@ -139,3 +152,14 @@ if __name__ == "__main__":
         Plot_connectome(population_sensory, positions_sensory, connections_sensory, ax)
         fig.savefig("fig.pdf")
 
+
+
+def test():
+
+    snn = SNN()
+
+
+
+
+if __name__ == "__main__":
+    test()

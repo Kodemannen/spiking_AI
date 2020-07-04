@@ -1,0 +1,154 @@
+{
+    "e_lif_params": {
+        "E_L": 0.0,
+        "tau_m": 30.0,
+        "C_m": 30.0,
+        "V_th": 15.0,
+        "V_reset": 13.8,
+        "t_ref": 2.0,
+        "V_m": 0.0,
+        "tau_syn_ex": 3.0,
+        "tau_syn_in": 2.0,
+        "I_e": 14.5
+    },
+    "i_lif_params": {
+        "E_L": 0.0,
+        "tau_m": 30.0,
+        "C_m": 30.0,
+        "V_th": 15.0,
+        "V_reset": 13.8,
+        "t_ref": 2.0,
+        "V_m": 0.0,
+        "tau_syn_ex": 3.0,
+        "tau_syn_in": 2.0,
+        "I_e": 14.5
+    },
+    "noise_gen_params": {
+        "rate": 25.0
+    },
+    "syn_spec_ee": {
+        "model": "tsodyks_synapse",
+        "weight": {
+            "distribution": "normal",
+            "mu": 50.0,
+            "sigma": 35.0
+        },
+        "delay": {
+            "distribution": "normal_clipped_to_boundary",
+            "mu": 10.0,
+            "sigma": 20.0,
+            "low": 3.0,
+            "high": 200.0
+        },
+        "tau_psc": 2.0,
+        "tau_fac": 1.0,
+        "tau_rec": 813.0,
+        "U": 0.59,
+        "u": 0.59,
+        "x": 0.0
+    },
+    "syn_spec_ei": {
+        "model": "tsodyks_synapse",
+        "weight": {
+            "distribution": "normal",
+            "mu": 250.0,
+            "sigma": 175.0
+        },
+        "delay": {
+            "distribution": "normal_clipped_to_boundary",
+            "mu": 10.0,
+            "sigma": 20.0,
+            "low": 3.0,
+            "high": 200.0
+        },
+        "tau_psc": 2.0,
+        "tau_fac": 1790.0,
+        "tau_rec": 399.0,
+        "U": 0.049,
+        "u": 0.049,
+        "x": 0.0
+    },
+    "syn_spec_ie": {
+        "model": "tsodyks_synapse",
+        "weight": {
+            "distribution": "normal",
+            "mu": -200.0,
+            "sigma": 140.0
+        },
+        "delay": {
+            "distribution": "normal_clipped_to_boundary",
+            "mu": 10.0,
+            "sigma": 20.0,
+            "low": 3.0,
+            "high": 200.0
+        },
+        "tau_psc": 2.0,
+        "tau_fac": 376.0,
+        "tau_rec": 45.0,
+        "U": 0.016,
+        "u": 0.016,
+        "x": 0.0
+    },
+    "syn_spec_ii": {
+        "model": "tsodyks_synapse",
+        "weight": {
+            "distribution": "normal",
+            "mu": -200.0,
+            "sigma": 140.0
+        },
+        "delay": {
+            "distribution": "normal_clipped_to_boundary",
+            "mu": 10.0,
+            "sigma": 20.0,
+            "low": 3.0,
+            "high": 200.0
+        },
+        "tau_psc": 2.0,
+        "tau_fac": 21.0,
+        "tau_rec": 706.0,
+        "U": 0.25,
+        "u": 0.25,
+        "x": 0.0
+    },
+    "syn_spec_inp": {
+        "model": "static_synapse",
+        "weight": {
+            "distribution": "uniform",
+            "low": 25.0,
+            "high": 75.0
+        },
+        "delay": {
+            "distribution": "normal_clipped_to_boundary",
+            "mu": 10.0,
+            "sigma": 20.0,
+            "low": 3.0,
+            "high": 200.0
+        }
+    },
+    "syn_spec_noise": {
+        "model": "static_synapse",
+        "weight": 5.0,
+        "delay": {
+            "distribution": "normal_clipped_to_boundary",
+            "mu": 10.0,
+            "sigma": 20.0,
+            "low": 3.0,
+            "high": 200.0
+        }
+    },
+    "rule_dict_exc": {
+        "rule": "fixed_indegree",
+        "indegree": 2
+    },
+    "rule_dict_inh": {
+        "rule": "fixed_indegree",
+        "indegree": 1
+    },
+    "rule_dict_inp": {
+        "rule": "fixed_outdegree",
+        "outdegree": 100
+    },
+    "rule_dict_noise": {
+        "rule": "all_to_all"
+    }
+}
