@@ -16,9 +16,22 @@ sns.set()
 import json
 
 
+def get_conn_pairs(conn_ij):
+
+    n_connections = len(conn_ij)
+    connection_pairs = np.zeros((n_connections, 2), dtype=np.int)
+    for i in range(n_connections):
+        source = connections_main[i][0]
+        target = connections_main[i][1]
+        connection_pairs[i] = source, target
+
+    return connection_pairs
+
+
+
 class SNN:
 
-    def __init__(self, snn_config=None, n_excitatory=100, n_inhibitory=25, use_noise=False):
+    def __init__(self, snn_config=None, n_excitatory=3, n_inhibitory=2, use_noise=False):
         """
         Main pop: consists of excitatory and inhibitory neurons
         Input pop: only excitatory
@@ -93,30 +106,56 @@ class SNN:
 
         #-----------------------------------------------
         # Getting connections:
-        target = (*self.e_population, *self.i_population)
-        source = (*self.e_population, *self.i_population)
-        connections_main = nest.GetConnections(target=target, source=source)
+        #target = (*self.e_population, *self.i_population)
+        #source = (*self.e_population, *self.i_population)
 
-        # connections_..[i] is connection number i in the list of connections in the network?
-        # format: (source-gid, target-gid, target-thread, synapse-id, port)
+        #connections_.. = nest.GetConnections(target=target, source=source)   # format: (source-gid, target-gid, target-thread, synapse-id, port)
+        # For an individual synapse we get:
+            # source = connections_..[i][0]
+            # target = connections_..[i][1]
 
-        n_connections = len(connections_main)
+        conn_groups = dict(
+            conn_ee = nest.GetConnections(source=self.e_population, target=self.e_population),
+            conn_ei = nest.GetConnections(source=self.e_population, target=self.i_population),
+            conn_ii = nest.GetConnections(source=self.i_population, target=self.i_population),
+            conn_ie = nest.GetConnections(source=self.i_population, target=self.e_population)
+        )
+    
+
+        conn_pairs = dict()
+        positions = dict()
+        #-----------------------------------------------
+        # Collection connection pairs in an array
+        # Need to keep track of which neuron has which position
+        for key in conn_groups:
+            conn_ij = conn_groups[key]
+            n_neurons = len(conn_ij)
+
+            conn_pairs[key] = get_conn_pairs(conn_groups[key])
+
+
+
+        
+        #-----------------------------------------------
+        # Random generating positions:
         n_total_neurons = self.n_excitatory + self.n_inhibitory
+        positions_excitatory = np.random.randint(low=0, high=10, size=(self.n_excitatory, 2))
+        positions_inhibitory = np.random.randint(low=10, high=20, size=(self.n_inhibitory, 2))
 
-        root = round(np.sqrt(n_total_neurons))
 
         #-----------------------------------------------
-        # Plot grid style:
-        # Set up in a grid after GIDs:
+        # Plotting neurons:
+        plt.scatter(positions_excitatory[:,0], positions_excitatory[:,1], label='Excitatory')
+        plt.scatter(positions_inhibitory[:,0], positions_inhibitory[:,1], label='Inhibitory')
 
-        layer = tp.CreateLayer(dict(
-            rows = 5,
-            columns = 5,
-            elements = "iaf_psc_alpha",
-            center = [1,2]
-        ))
+        # Plotting connections:
+        for i in range(n_connections):
+            conn_pair 
+            plt.plot(
 
-        print(nest.GetStatus(layer))
+        #plt.axis('off')
+        plt.savefig('test.png')
+
 
         return None
 
