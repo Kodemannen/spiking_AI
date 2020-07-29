@@ -10,6 +10,7 @@ import nest.topology as tp
 nest.set_verbosity("M_WARNING")
 
 import matplotlib.pyplot as plt
+from matplotlib import collections as mc
 import seaborn as sns
 sns.set()
 
@@ -21,8 +22,8 @@ def get_conn_pairs(conn_ij):
     n_connections = len(conn_ij)
     connection_pairs = np.zeros((n_connections, 2), dtype=np.int)
     for i in range(n_connections):
-        source = connections_main[i][0]
-        target = connections_main[i][1]
+        source = conn_ij[i][0]
+        target = conn_ij[i][1]
         connection_pairs[i] = source, target
 
     return connection_pairs
@@ -31,7 +32,7 @@ def get_conn_pairs(conn_ij):
 
 class SNN:
 
-    def __init__(self, snn_config=None, n_excitatory=3, n_inhibitory=2, use_noise=False):
+    def __init__(self, snn_config=None, n_excitatory=100, n_inhibitory=25, use_noise=False):
         """
         Main pop: consists of excitatory and inhibitory neurons
         Input pop: only excitatory
@@ -44,26 +45,10 @@ class SNN:
         nest.ResetKernel()
 
         #-----------------------------------------------
-        # Fetching config parameters from file:
-        with open('default.json', 'r') as f:
-          default_cfg = json.load(f)
-
-        self.snn_conf = default_cfg.copy()
-        if snn_config:
-            self.snn_conf.update(snn_config)
-
-        #-----------------------------------------------
         # Creating main population:
-        e_lif_params = self.snn_conf["e_lif_params"]
-        i_lif_params = self.snn_conf["i_lif_params"]
-        self.e_population = nest.Create('iaf_psc_exp', n_excitatory, e_lif_params)
-        self.i_population = nest.Create('iaf_psc_exp', n_inhibitory, i_lif_params)
-
-        #-----------------------------------------------
-        # Creating noise generator, if included:
-        if self.use_noise:
-            noise_gen_params = self.snn_conf["noise_gen_params"]
-            noise_generator = nest.Create('poisson_generator', 1, noise_gen_params)
+        # Important that these are the first elements created, since the indices will be used for positions
+        self.e_population = nest.Create('iaf_psc_alpha', n_excitatory)
+        self.i_population = nest.Create('iaf_psc_alpha', n_inhibitory)
 
         #-----------------------------------------------
         # Creating spike detectors:
@@ -71,31 +56,30 @@ class SNN:
         self.i_spike_detector = nest.Create('spike_detector')
 
         #-----------------------------------------------
-        # Fetching connection rules and parameters:
-        syn_spec_ee = self.snn_conf["syn_spec_ee"]
-        syn_spec_ei = self.snn_conf["syn_spec_ei"]
-        syn_spec_ie = self.snn_conf["syn_spec_ie"]
-        syn_spec_ii = self.snn_conf["syn_spec_ii"]
-        syn_spec_noise = self.snn_conf["syn_spec_noise"]
-        rule_dict_exc = self.snn_conf["rule_dict_exc"]
-        rule_dict_inh = self.snn_conf["rule_dict_inh"]
-        rule_dict_noise = self.snn_conf["rule_dict_noise"]
+        # Connection rules and parameters:
+        weight_e = 10.
+        weight_i = -2.5
+        outdegree = 2
+        delay = 1.
+        
+        syn_spec_ee = dict(weight=weight_e, delay=delay)
+        syn_spec_ei = dict(weight=weight_e, delay=delay)
+        syn_spec_ie = dict(weight=weight_i, delay=delay)
+        syn_spec_ii = dict(weight=weight_i, delay=delay)
+
+        rule_dict_e = dict(rule="fixed_outdegree", outdegree=outdegree)
+        rule_dict_i = dict(rule="fixed_outdegree", outdegree=outdegree)
+
 
         #-----------------------------------------------
-        # Connecting noise to main pop:
-        if self.use_noise:
-            nest.Connect(noise_generator, self.e_population, rule_dict_noise, syn_spec_noise)
-            nest.Connect(noise_generator, self.i_population, rule_dict_noise, syn_spec_noise)
+        # Connecting recurrent connections:
+        nest.Connect(self.e_population, self.e_population, rule_dict_e, syn_spec_ee)
+        nest.Connect(self.e_population, self.i_population, rule_dict_e, syn_spec_ei)
+        nest.Connect(self.i_population, self.i_population, rule_dict_i, syn_spec_ii)
+        nest.Connect(self.i_population, self.e_population, rule_dict_i, syn_spec_ie)
 
         #-----------------------------------------------
-        # Connecting recurrent connections in the main pop:
-        nest.Connect(self.e_population, self.e_population, rule_dict_exc, syn_spec_ee)
-        nest.Connect(self.e_population, self.i_population, rule_dict_exc, syn_spec_ei)
-        nest.Connect(self.i_population, self.i_population, rule_dict_inh, syn_spec_ii)
-        nest.Connect(self.i_population, self.e_population, rule_dict_inh, syn_spec_ie)
-
-        #-----------------------------------------------
-        # Connecting main pop to spike detectors:
+        # Connecting to spike detectors:
         nest.Connect(self.e_population, self.e_spike_detector)
         nest.Connect(self.i_population, self.i_spike_detector)
 
@@ -121,37 +105,76 @@ class SNN:
             conn_ie = nest.GetConnections(source=self.i_population, target=self.e_population)
         )
     
-
-        conn_pairs = dict()
-        positions = dict()
-        #-----------------------------------------------
-        # Collection connection pairs in an array
-        # Need to keep track of which neuron has which position
-        for key in conn_groups:
-            conn_ij = conn_groups[key]
-            n_neurons = len(conn_ij)
-
-            conn_pairs[key] = get_conn_pairs(conn_groups[key])
-
-
-
-        
         #-----------------------------------------------
         # Random generating positions:
-        n_total_neurons = self.n_excitatory + self.n_inhibitory
         positions_excitatory = np.random.randint(low=0, high=10, size=(self.n_excitatory, 2))
         positions_inhibitory = np.random.randint(low=10, high=20, size=(self.n_inhibitory, 2))
+        # The relationship between neuron GID and position is: 
+            # For excitatory:
+                # position index = GID - 1
+            # For inhibitory:
+                # position index = GID - 1 - self.n_excitatory
 
+
+        #-----------------------------------------------
+        # Collecting connection pairs in an array
+        conn_pairs = dict()
+        for key in conn_groups:
+            conn_ij = conn_groups[key]
+            conn_pairs[key] = get_conn_pairs(conn_groups[key])    # all the connection pairs from pop i to pop j
+
+
+        fig, ax = plt.subplots()
 
         #-----------------------------------------------
         # Plotting neurons:
-        plt.scatter(positions_excitatory[:,0], positions_excitatory[:,1], label='Excitatory')
-        plt.scatter(positions_inhibitory[:,0], positions_inhibitory[:,1], label='Inhibitory')
+        ax.scatter(positions_excitatory[:,0], positions_excitatory[:,1], label='Excitatory')
+        ax.scatter(positions_inhibitory[:,0], positions_inhibitory[:,1], label='Inhibitory')
 
         # Plotting connections:
-        for i in range(n_connections):
-            conn_pair 
-            plt.plot(
+        conn_lines = dict()
+        for key in conn_pairs:
+            print(key)
+            print('---------------------------------------------------------')
+            sender_type = key[-2]
+            receiver_type = key[-1]
+            
+            pairs = conn_pairs[key]
+            n_pairs = len(pairs)
+            lines = np.zeros(shape=(n_pairs, 2, 2))
+            
+            for i in range(n_pairs):
+                pair = pairs[i]
+
+                if sender_type=='e':
+                    source_pos_index = pair[0]-1
+                    source_pos = positions_excitatory[source_pos_index]
+
+                elif sender_type=='i':
+                    source_pos_index = pair[0]-1-self.n_excitatory
+                    source_pos = positions_inhibitory[source_pos_index]
+
+                if receiver_type=='e':
+                    receiver_pos_index = pair[1]-1
+                    receiver_pos = positions_excitatory[receiver_pos_index]
+
+                elif receiver_type=='i':
+                    receiver_pos_index = pair[1]-1-self.n_excitatory
+                    print(receiver_pos_index)
+                    receiver_pos = positions_inhibitory[receiver_pos_index]
+
+                lines[i, 0] = source_pos 
+                lines[i, 1] = receiver_pos
+
+                #source_pos_index = pair[0]-1 if sender_type=='e' else pair[0]-1-self.n_excitatory
+                #target_pos_index = pair[1]-1 if receiver_type=='e' else pair[1]-1-self.n_excitatory
+                #
+                #source_pos = positions_excitatory 
+            
+            conn_lines[key] = lines
+            lc = mc.LineCollection(lines, linewidths=0.1)
+            ax.add_collection(lc) 
+            
 
         #plt.axis('off')
         plt.savefig('test.png')
