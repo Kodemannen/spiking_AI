@@ -29,6 +29,22 @@ def get_conn_pairs(conn_ij):
     return connection_pairs
 
 
+def get_circular_positions(n_neurons, R=1, center=(0,0)):
+
+    # need key word arguments R (max radius)
+    r = np.random.uniform(low=-R, high=R, size=n_neurons)
+    theta = np.random.uniform(low=0, high=2*np.pi, size=n_neurons)
+
+    positions = np.zeros(shape=(n_neurons, 2))
+    positions[:,0] = r*np.cos(theta)
+    positions[:,1] = r*np.sin(theta)
+
+    # addind center position:
+    positions += center
+
+    return positions
+
+
 
 class SNN:
 
@@ -107,8 +123,13 @@ class SNN:
     
         #-----------------------------------------------
         # Random generating positions:
-        positions_excitatory = np.random.randint(low=0, high=10, size=(self.n_excitatory, 2))
-        positions_inhibitory = np.random.randint(low=10, high=20, size=(self.n_inhibitory, 2))
+        positions_e = get_circular_positions(n_neurons=self.n_excitatory, R=0.8, center=(0,0))
+        positions_i = get_circular_positions(n_neurons=self.n_inhibitory, R=0.5, center=(1.25,1.25))
+        #positions_excitatory = np.random.randint(low=0, high=10, size=(self.n_excitatory, 2))
+        #positions_inhibitory = np.random.randint(low=10, high=20, size=(self.n_inhibitory, 2))
+        #positions_excitatory = np.random.normal(size=(self.n_excitatory, 2)) * spread_e + mean_e
+        #positions_inhibitory = np.random.normal(size=(self.n_inhibitory, 2)) * spread_i + mean_i
+
         # The relationship between neuron GID and position is: 
             # For excitatory:
                 # position index = GID - 1
@@ -128,14 +149,12 @@ class SNN:
 
         #-----------------------------------------------
         # Plotting neurons:
-        ax.scatter(positions_excitatory[:,0], positions_excitatory[:,1], label='Excitatory')
-        ax.scatter(positions_inhibitory[:,0], positions_inhibitory[:,1], label='Inhibitory')
+        ax.scatter(positions_e[:,0], positions_e[:,1], label='Excitatory')
+        ax.scatter(positions_i[:,0], positions_i[:,1], label='Inhibitory')
 
-        # Plotting connections:
+        # Plotting connection lines:
         conn_lines = dict()
         for key in conn_pairs:
-            print(key)
-            print('---------------------------------------------------------')
             sender_type = key[-2]
             receiver_type = key[-1]
             
@@ -148,20 +167,19 @@ class SNN:
 
                 if sender_type=='e':
                     source_pos_index = pair[0]-1
-                    source_pos = positions_excitatory[source_pos_index]
+                    source_pos = positions_e[source_pos_index]
 
                 elif sender_type=='i':
                     source_pos_index = pair[0]-1-self.n_excitatory
-                    source_pos = positions_inhibitory[source_pos_index]
+                    source_pos = positions_i[source_pos_index]
 
                 if receiver_type=='e':
                     receiver_pos_index = pair[1]-1
-                    receiver_pos = positions_excitatory[receiver_pos_index]
+                    receiver_pos = positions_e[receiver_pos_index]
 
                 elif receiver_type=='i':
                     receiver_pos_index = pair[1]-1-self.n_excitatory
-                    print(receiver_pos_index)
-                    receiver_pos = positions_inhibitory[receiver_pos_index]
+                    receiver_pos = positions_i[receiver_pos_index]
 
                 lines[i, 0] = source_pos 
                 lines[i, 1] = receiver_pos
@@ -186,7 +204,7 @@ class SNN:
 
 def test():
 
-    snn = SNN()
+    snn = SNN(n_excitatory=100, n_inhibitory=30)
     snn.plot_connectome()
 
 
