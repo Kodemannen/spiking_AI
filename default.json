@@ -125,6 +125,21 @@
             "high": 200.0
         }
     },
+    "syn_spec_output": {
+        "model": "static_synapse",
+        "weight": {
+            "distribution": "uniform",
+            "low": 25.0,
+            "high": 75.0
+        },
+        "delay": {
+            "distribution": "normal_clipped_to_boundary",
+            "mu": 10.0,
+            "sigma": 20.0,
+            "low": 3.0,
+            "high": 200.0
+        }
+    },
     "syn_spec_noise": {
         "model": "static_synapse",
         "weight": 5.0,
@@ -136,17 +151,21 @@
             "high": 200.0
         }
     },
-    "rule_dict_exc": {
+    "rule_dict_e": {
         "rule": "fixed_indegree",
         "indegree": 2
     },
-    "rule_dict_inh": {
+    "rule_dict_i": {
         "rule": "fixed_indegree",
         "indegree": 1
     },
     "rule_dict_inp": {
         "rule": "fixed_outdegree",
-        "outdegree": 100
+        "outdegree": 10
+    },
+    "rule_dict_output": {
+        "rule": "fixed_indegree",
+        "indegree": 3
     },
     "rule_dict_noise": {
         "rule": "all_to_all"
