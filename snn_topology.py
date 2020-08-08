@@ -91,7 +91,6 @@ def get_circular_positions_uniform(n_neurons, radius=1, center=(0,0)):
         
     return connection_pairs 
 
-    
 def get_vertical_line_positions(n_neurons, column_size=1, column_center=(-1,0)):
         
     x_positions = np.zeros(shape=(n_neurons)) + column_center[0]
@@ -118,9 +117,11 @@ class SNN:
 
         #-----------------------------------------------
         # Creating nodes:
-        self.e_population = nest.Create('iaf_psc_alpha', n_excitatory)
-        self.i_population = nest.Create('iaf_psc_alpha', n_inhibitory)
-        self.input_nodes = nest.Create('iaf_psc_alpha', n_inputs)
+        self.e_pop_dict = 
+        self.e_population = tp.CreateLayer('iaf_psc_alpha', n_excitatory)
+
+        self.i_population = tp.Create('iaf_psc_alpha', n_inhibitory)
+        self.input_nodes = tp.Create('iaf_psc_alpha', n_inputs)
 
         #-----------------------------------------------
         # Creating spike detectors:
@@ -173,7 +174,7 @@ class SNN:
                         center_i=(0,2), 
 
                         input_colum_size=1, 
-                        input_column_center=(-1.5,0.9)
+                        input_column_center=(-1,0)
                         ):
         '''
         Plots all the nodes and connections in the SNN
@@ -189,8 +190,7 @@ class SNN:
             conn_ee = nest.GetConnections(source=self.e_population, target=self.e_population),
             conn_ei = nest.GetConnections(source=self.e_population, target=self.i_population),
             conn_ii = nest.GetConnections(source=self.i_population, target=self.i_population),
-            conn_ie = nest.GetConnections(source=self.i_population, target=self.e_population),
-            conn_inp = nest.GetConnections(source=self.input_nodes, target=self.e_population),
+            conn_ie = nest.GetConnections(source=self.i_population, target=self.e_population)
         )
     
         #-----------------------------------------------
@@ -207,20 +207,7 @@ class SNN:
                     # position index = GID - 1 - self.n_excitatory
 
         # Generating input column:
-        positions_inp = get_vertical_line_positions(
-                                                    n_neurons=self.n_inputs,
-                                                    column_size=input_colum_size,
-                                                    column_center=input_column_center
-                                                    )
-
-
-        #-------------------Plotting--------------------
-        fig, ax = plt.subplots()
-
-        # Plotting nodes:
-        ax.scatter(positions_e[:,0], positions_e[:,1], label='Excitatory')
-        ax.scatter(positions_i[:,0], positions_i[:,1], label='Inhibitory')
-        ax.scatter(positions_inp[:,0], positions_inp[:,1], color='grey', label='Input')
+        positions_inp = get_vertical_line_positions(n_neurons=self.n_inputs)
 
         #-----------------------------------------------
         # Collecting connection pairs in an array
@@ -229,17 +216,19 @@ class SNN:
             conn_ij = conn_groups[key]
             conn_pairs[key] = get_conn_pairs(conn_groups[key])    
 
+        fig, ax = plt.subplots()
+
+        #-----------------------------------------------
+        # Plotting nodes:
+        ax.scatter(positions_e[:,0], positions_e[:,1], label='Excitatory')
+        ax.scatter(positions_i[:,0], positions_i[:,1], label='Inhibitory')
+
         #-----------------------------------------------
         # Plotting connection lines:
         conn_lines = dict()
         for key in conn_pairs:
-
-            if key=="conn_inp":
-                sender_type = 'input'
-                receiver_type = 'e'
-            else:
-                sender_type = key[-2]
-                receiver_type = key[-1]
+            sender_type = key[-2]
+            receiver_type = key[-1]
             
             pairs = conn_pairs[key]
             n_pairs = len(pairs)
@@ -249,16 +238,12 @@ class SNN:
                 pair = pairs[i]
 
                 if sender_type=='e':
-                    source_pos_index = pair[0] - 1
+                    source_pos_index = pair[0]-1
                     source_pos = positions_e[source_pos_index]
 
                 elif sender_type=='i':
-                    source_pos_index = pair[0] - 1 - self.n_excitatory
+                    source_pos_index = pair[0]-1-self.n_excitatory
                     source_pos = positions_i[source_pos_index]
-
-                elif sender_type=='input': 
-                    source_pos_index = pair[0] - 1 - self.n_excitatory - self.n_inhibitory 
-                    source_pos = positions_inp[source_pos_index]
 
                 if receiver_type=='e':
                     receiver_pos_index = pair[1]-1
@@ -270,7 +255,6 @@ class SNN:
 
                 lines[i, 0] = source_pos 
                 lines[i, 1] = receiver_pos
-
 
             conn_lines[key] = lines
             lc = mc.LineCollection(lines, linewidths=0.1)
