@@ -1,1 +1,1 @@
-# Spiking_AI
+# spiking_AI
