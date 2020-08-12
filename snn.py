@@ -3,7 +3,7 @@ from joblib import delayed, Parallel
 import sys
 
 import numpy as np
-np.random.seed(13)
+#np.random.seed(13)
 
 import nest
 nest.set_verbosity("M_WARNING")
@@ -42,7 +42,10 @@ def get_spike_times_by_id(times_senders, pop, unit_s=False):
     # spikes_per_id = []
     scale = 1000. if unit_s else 1.
 
-    delayed_ = (delayed(__get_spike_times_by_id)(idx, times, senders, scale) for idx in pop)
+    delayed_ = (delayed(__get_spike_times_by_id)(idx, 
+                                                 times, 
+                                                 senders, 
+                                                 scale) for idx in pop)
     ret_ = Parallel(n_jobs=mp.cpu_count())(delayed_)
 
     return ret_
@@ -55,8 +58,8 @@ class SNN:
 
     def __init__(self, 
                  snn_config=None, 
-                 n_excitatory=100, 
-                 n_inhibitory=25, 
+                 n_excitatory=5, 
+                 n_inhibitory=4, 
                  n_inputs=10, 
                  n_outputs=10, 
                  use_noise=False
@@ -90,12 +93,23 @@ class SNN:
         e_lif_params = self.snn_conf["e_lif_params"]
         i_lif_params = self.snn_conf["i_lif_params"]
 
-        self.e_population = nest.Create('iaf_psc_alpha', n_excitatory, e_lif_params)
-        self.i_population = nest.Create('iaf_psc_alpha', n_inhibitory, i_lif_params)
-        self.input_nodes = nest.Create('spike_generator', n_inputs)
-        self.output_nodes = nest.Create('iaf_psc_alpha', n_outputs, e_lif_params)
+        self.e_population = nest.Create('iaf_psc_alpha', 
+                                        n_excitatory, 
+                                        e_lif_params)
 
-        assert (self.e_population[0] == 1), '''Nodes must be created first and has to be in the order 
+        self.i_population = nest.Create('iaf_psc_alpha', 
+                                        n_inhibitory, 
+                                        i_lif_params)
+
+        self.input_nodes = nest.Create('spike_generator', 
+                                        n_inputs)
+
+        self.output_nodes = nest.Create('iaf_psc_alpha', 
+                                        n_outputs, 
+                                        e_lif_params)
+
+        assert (self.e_population[0] == 1), '''Nodes must be created 
+                                            first and has to be in the order 
                                             exc, inh, input, output'''
 
         #-----------------------------------------------
@@ -126,12 +140,35 @@ class SNN:
 
         #-----------------------------------------------
         # Connecting nodes:
-        nest.Connect(self.e_population, self.e_population, rule_dict_e, syn_spec_ee)
-        nest.Connect(self.e_population, self.i_population, rule_dict_e, syn_spec_ei)
-        nest.Connect(self.i_population, self.i_population, rule_dict_i, syn_spec_ii)
-        nest.Connect(self.i_population, self.e_population, rule_dict_i, syn_spec_ie)
-        nest.Connect(self.input_nodes, self.e_population, rule_dict_inp, syn_spec_inp)
-        nest.Connect(self.e_population, self.output_nodes, rule_dict_output, syn_spec_ee)
+        nest.Connect(self.e_population, 
+                     self.e_population, 
+                     rule_dict_e, 
+                     syn_spec_ee)
+
+        nest.Connect(self.e_population, 
+                     self.i_population, 
+                     rule_dict_e, 
+                     syn_spec_ei)
+
+        nest.Connect(self.i_population, 
+                     self.i_population, 
+                     rule_dict_i, 
+                     syn_spec_ii)
+
+        nest.Connect(self.i_population, 
+                     self.e_population, 
+                     rule_dict_i, 
+                     syn_spec_ie)
+
+        nest.Connect(self.input_nodes, 
+                     self.e_population, 
+                     rule_dict_inp, 
+                     syn_spec_inp)
+
+        nest.Connect(self.e_population, 
+                     self.output_nodes, 
+                     rule_dict_output, 
+                     syn_spec_ee)
 
         #-----------------------------------------------
         # Connecting to spike detectors:
@@ -160,11 +197,17 @@ class SNN:
         Plots all the nodes and connections in the SNN
         '''
 
-    
         #-----------------------------------------------
         # Random generating main pop positions:
-        positions_e = get_circular_positions(n_neurons=self.n_excitatory, radius=radius_e, center=center_e)
-        positions_i = get_circular_positions(n_neurons=self.n_inhibitory, radius=radius_i, center=center_i)
+        positions_e = get_circular_positions(
+                                            n_neurons=self.n_excitatory, 
+                                            radius=radius_e, 
+                                            center=center_e)
+
+        positions_i = get_circular_positions(
+                                            n_neurons=self.n_inhibitory, 
+                                            radius=radius_i, 
+                                            center=center_i)
 
             # The relationship between neuron GID and position is: 
 
@@ -176,17 +219,15 @@ class SNN:
 
         # Generating input column:
         positions_input = get_vertical_line_positions(
-                                                    n_neurons=self.n_inputs,
-                                                    column_size=input_column_size,
-                                                    column_center=input_column_center
-                                                    )
+                                            n_neurons=self.n_inputs,
+                                            column_size=input_column_size,
+                                            column_center=input_column_center)
 
         # Generating output column:
         positions_output = get_vertical_line_positions(
-                                                    n_neurons=self.n_outputs,
-                                                    column_size=output_column_size,
-                                                    column_center=output_column_center
-                                                    )
+                                            n_neurons=self.n_outputs,
+                                            column_size=output_column_size,
+                                            column_center=output_column_center)
 
         #connections_.. = nest.GetConnections(target=target, source=source)   
         # format: (source-gid, target-gid, target-thread, synapse-id, port)
@@ -194,16 +235,28 @@ class SNN:
             # source = connections_..[i][0]
             # target = connections_..[i][1]
 
+
+        nest.GetConnections(self.e_population)
+
+
         #-----------------------------------------------
         # Connection storage:
+
         conn_groups = dict(
-            conn_ee = nest.GetConnections(source=self.e_population, target=self.e_population),
-            conn_ei = nest.GetConnections(source=self.e_population, target=self.i_population),
-            conn_ii = nest.GetConnections(source=self.i_population, target=self.i_population),
-            conn_ie = nest.GetConnections(source=self.i_population, target=self.e_population),
-            conn_inp = nest.GetConnections(source=self.input_nodes, target=self.e_population),
-            conn_output = nest.GetConnections(source=self.e_population, target=self.output_nodes),
-        )
+            conn_ee = nest.GetConnections(source=self.e_population, 
+                                          target=self.e_population),
+            conn_ei = nest.GetConnections(source=self.e_population, 
+                                          target=self.i_population),
+            conn_ii = nest.GetConnections(source=self.i_population, 
+                                          target=self.i_population),
+            conn_ie = nest.GetConnections(source=self.i_population, 
+                                          target=self.e_population),
+            conn_inp = nest.GetConnections(source=self.input_nodes, 
+                                          target=self.e_population),
+            conn_output = nest.GetConnections(source=self.e_population, 
+                                          target=self.output_nodes),
+            )
+
         conn_pairs = dict()
         for key in conn_groups:
             conn_pairs[key] = get_conn_pairs(conn_groups[key])    
@@ -270,7 +323,7 @@ class SNN:
 
 
             conn_lines[key] = lines
-            lc = mc.LineCollection(lines, linewidths=0.1)       # choose color here
+            lc = mc.LineCollection(lines, linewidths=0.1) # choose color here
             ax.add_collection(lc) 
             #_______________________________________________
 
@@ -284,11 +337,26 @@ class SNN:
         self.conn_lines = conn_lines
             
 
+        #-----------------------------------------------
         # Plotting nodes:
-        ax.scatter(positions_e[:,0], positions_e[:,1], label='Excitatory')
-        ax.scatter(positions_i[:,0], positions_i[:,1], label='Inhibitory')
-        ax.scatter(positions_input[:,0], positions_input[:,1], color='grey', label='Input')
-        ax.scatter(positions_output[:,0], positions_output[:,1], color='grey', label='Output')
+        
+        ax.scatter(positions_e[:,0], 
+                   positions_e[:,1], 
+                   label='Excitatory')
+
+        ax.scatter(positions_i[:,0], 
+                   positions_i[:,1], 
+                   label='Inhibitory')
+
+        ax.scatter(positions_input[:,0], 
+                   positions_input[:,1], 
+                   color='grey', 
+                   label='Input')
+
+        ax.scatter(positions_output[:,0], 
+                   positions_output[:,1], 
+                   color='grey', 
+                   label='Output')
 
         # plt.axis('off')
         ax.set_aspect('equal')
@@ -303,26 +371,31 @@ class SNN:
 
     def __run_simulation(self, sim_time=100, T=0):
 
-        #----------------------------------------------------------------------
+        #----------------------------------------------
         # simulate
         nest.Simulate(sim_time)
 
-        #----------------------------------------------------------------------
+        #----------------------------------------------
         # analysis
-        stat_e = nest.GetStatus(self.e_spike_detector, 'events')[0]     # GetStatus returns list of 
-        stat_i = nest.GetStatus(self.i_spike_detector, 'events')[0]     # dictionaries
+
+        stat_e = nest.GetStatus(self.e_spike_detector, 'events')[0]
+        stat_i = nest.GetStatus(self.i_spike_detector, 'events')[0]     
+
         stat_input = nest.GetStatus(self.input_spike_detector, 'events')[0]
         stat_output = nest.GetStatus(self.output_spike_detector, 'events')[0]
 
         # stat_x['times'] is a one dimensional list of spike times
-        # stat_x['senders'] is a one dimensional list of gids corresponding to the spike times
+        # stat_x['senders'] is a one dimensional list of gids 
+        # corresponding to the spike times
         
 
-        #----------------------------------------------------------------------
-        # separating out the firings from the most recent simulation (after time T)
-        times_e_indices  = np.argwhere( stat_e['times'] > T )[:,0]          # [:,0] is just because
-        times_i_indices  = np.argwhere( stat_i['times'] > T )[:,0]          # it returns a nested array,
-        times_input_indices = np.argwhere( stat_input['times'] > T )[:,0]   # and we don't want that.
+        #----------------------------------------------
+        # separating out the firings from the most recent simulation 
+        # (after time T)
+
+        times_e_indices  = np.argwhere( stat_e['times'] > T )[:,0]          
+        times_i_indices  = np.argwhere( stat_i['times'] > T )[:,0]         
+        times_input_indices = np.argwhere( stat_input['times'] > T )[:,0] 
         times_output_indices = np.argwhere( stat_output['times'] > T )[:,0]
         
         times_e = stat_e['times'][times_e_indices]
@@ -343,8 +416,14 @@ class SNN:
         # extract spike times in an array per neuron
         e_spike_times = get_spike_times_by_id(spikes_e, self.e_population)
         i_spike_times = get_spike_times_by_id(spikes_i, self.i_population)
-        input_spike_times = get_spike_times_by_id(spikes_input, self.input_nodes)
-        output_spike_times = get_spike_times_by_id(spikes_output, self.output_nodes)
+
+        input_spike_times = get_spike_times_by_id(
+                                                  spikes_input, 
+                                                  self.input_nodes)
+
+        output_spike_times = get_spike_times_by_id(
+                                                  spikes_output, 
+                                                  self.output_nodes)
 
         if len(e_spike_times) == 0:
             print('no spikes')
@@ -361,23 +440,41 @@ class SNN:
         print('mean excitatory rate: {0:.2f} Hz'.format(rate_e))
         print('mean inhibitory rate: {0:.2f} Hz'.format(rate_i))
 
-        return e_spike_times, i_spike_times, input_spike_times, output_spike_times, (rate_e, 
-               rate_i, rate_output)
+        return (e_spike_times, i_spike_times, input_spike_times, 
+               output_spike_times, (rate_e, rate_i, rate_output))
 
 
     def simulate(self, input_spikes, sim_time, T=0):
 
-        input_spiketimes = [{'spike_times': np.round(spt, 1) + T } for spt in input_spikes]
-        nest.SetStatus(self.input_nodes, input_spiketimes)
+        input_spike_times = [{'spike_times': np.round(spt, 1) + T } 
+                                            for spt in input_spikes]
+
+        nest.SetStatus(self.input_nodes, input_spike_times)
 
         return self.__run_simulation(sim_time, T=T)
 
     
-    def animate(self, e_spike_times, i_spike_times, input_spike_times, output_spike_times):
+    def animate(self, 
+                e_spike_times,      # shape=(n_excitatory, spike_times) 
+                i_spike_times,      
+                input_spike_times, 
+                output_spike_times):
         
+        base_ax = self.base_ax
+        base_fig = self.base_fig
+
         fig, ax = plt.subplots()
-        self.conn
-        pass
+
+        full_conn_lines = self.conn_lines   # basis
+
+        print(e_spike_times.shape)
+
+        # Each timestep we want to take all the neurons that fired and 
+        # visualize them and their synapses activating
+
+        def update_frame(i):
+            pass
+
 
 
 def spike_train_gen(sim_time):
@@ -403,19 +500,21 @@ def test():
 
     #----------------------------------------------------------------------
     # Plotting:
-    snn.plot_connectome( 
-                        radius_e=0.8, 
-                        radius_i=0.5, 
-                        
-                        center_e=(0,0), 
-                        center_i=(0,1.5), 
+    plotting = True
+    if plotting:
+        snn.plot_connectome( 
+                            radius_e=0.8, 
+                            radius_i=0.5, 
+                            
+                            center_e=(0,0), 
+                            center_i=(0,1.5), 
 
-                        input_column_size=1, 
-                        input_column_center=(-1.5,0.9),
+                            input_column_size=1, 
+                            input_column_center=(-1.5,0.9),
 
-                        output_column_size=1/8 * 4, 
-                        output_column_center=(1.5,0.9),
-                        )
+                            output_column_size=1/8 * 4, 
+                            output_column_center=(1.5,0.9),
+                            )
 
     # Dummy input spikes:
     sim_time = 100
@@ -425,8 +524,17 @@ def test():
     # Simulating:
     T = 0
     sim_data = snn.simulate(input_spikes=inputs, sim_time=sim_time, T=T)
-
-
+    e_spike_times = np.array(sim_data[0])
+    i_spike_times = np.array(sim_data[1])
+    input_spike_times = np.array(sim_data[2])
+    output_spike_times = np.array(sim_data[3])
+    
+    #----------------------------------------------------------------------
+    # Animating:
+    snn.animate(e_spike_times, 
+                i_spike_times, 
+                input_spike_times, 
+                output_spike_times)
 
 
 if __name__ == "__main__":

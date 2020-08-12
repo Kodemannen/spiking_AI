@@ -75,8 +75,11 @@ def get_circular_positions_uniform(n_neurons, radius=1, center=(0,0)):
     
 def get_vertical_line_positions(n_neurons, column_size=1, column_center=(-1,0)):
         
-    x_positions = np.zeros(shape=(n_neurons)) + column_center[0]
-    y_positions = np.linspace(-column_size/2, column_size/2, n_neurons) + column_center[1]
+    x_positions = np.zeros(shape=(n_neurons)) 
+    x_positions += column_center[0] 
+
+    y_positions = np.linspace(-column_size/2, column_size/2, n_neurons) 
+    y_positions += column_center[1]
 
     positions = np.array( [x_positions, y_positions] ).T
     return positions
