@@ -9,8 +9,10 @@ endif
 set shortmess=aoO
 badd +1 functions.py
 badd +1 snn.py
-badd +1 animate_image.py
+badd +72 animate_image.py
 badd +1 default.json
+badd +0 too.txt
+badd +0 todo.txt
 argglobal
 %argdel
 $argadd functions.py
@@ -22,10 +24,6 @@ wincmd _ | wincmd |
 vsplit
 1wincmd h
 wincmd w
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
 set nosplitbelow
 set nosplitright
 wincmd t
@@ -34,10 +32,7 @@ set winheight=1
 set winminwidth=0
 set winwidth=1
 exe 'vert 1resize ' . ((&columns * 104 + 106) / 212)
-exe '2resize ' . ((&lines * 8 + 25) / 51)
 exe 'vert 2resize ' . ((&columns * 107 + 106) / 212)
-exe '3resize ' . ((&lines * 39 + 25) / 51)
-exe 'vert 3resize ' . ((&columns * 107 + 106) / 212)
 argglobal
 if bufexists("snn.py") | buffer snn.py | else | edit snn.py | endif
 setlocal fdm=manual
@@ -49,30 +44,12 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 542 - ((35 * winheight(0) + 24) / 48)
+let s:l = 544 - ((0 * winheight(0) + 15) / 31)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-542
-normal! 017|
-wincmd w
-argglobal
-if bufexists("animate_image.py") | buffer animate_image.py | else | edit animate_image.py | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 71 - ((0 * winheight(0) + 4) / 8)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-71
-normal! 05|
+544
+normal! 011|
 wincmd w
 argglobal
 if bufexists("functions.py") | buffer functions.py | else | edit functions.py | endif
@@ -85,23 +62,25 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 10 - ((1 * winheight(0) + 19) / 39)
+let s:l = 85 - ((27 * winheight(0) + 15) / 31)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-10
-normal! 09|
+85
+normal! 0
 wincmd w
+2wincmd w
 exe 'vert 1resize ' . ((&columns * 104 + 106) / 212)
-exe '2resize ' . ((&lines * 8 + 25) / 51)
 exe 'vert 2resize ' . ((&columns * 107 + 106) / 212)
-exe '3resize ' . ((&lines * 39 + 25) / 51)
-exe 'vert 3resize ' . ((&columns * 107 + 106) / 212)
-tabedit default.json
+tabedit todo.txt
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
 1wincmd h
+wincmd _ | wincmd |
+split
+1wincmd k
+wincmd w
 wincmd w
 set nosplitbelow
 set nosplitright
@@ -110,8 +89,29 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
+exe '1resize ' . ((&lines * 15 + 17) / 34)
 exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
+exe '2resize ' . ((&lines * 15 + 17) / 34)
+exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+exe 'vert 3resize ' . ((&columns * 106 + 106) / 212)
+argglobal
+if bufexists("todo.txt") | buffer todo.txt | else | edit todo.txt | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+let s:l = 3 - ((2 * winheight(0) + 7) / 15)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+3
+normal! 0
+wincmd w
 argglobal
 if bufexists("default.json") | buffer default.json | else | edit default.json | endif
 setlocal fdm=manual
@@ -123,12 +123,12 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 118 - ((25 * winheight(0) + 24) / 48)
+let s:l = 117 - ((6 * winheight(0) + 7) / 15)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-118
-normal! 010|
+117
+normal! 024|
 wincmd w
 argglobal
 if bufexists("animate_image.py") | buffer animate_image.py | else | edit animate_image.py | endif
@@ -141,15 +141,18 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 91 - ((0 * winheight(0) + 24) / 48)
+let s:l = 91 - ((1 * winheight(0) + 15) / 31)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 91
 normal! 0
 wincmd w
+exe '1resize ' . ((&lines * 15 + 17) / 34)
 exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
+exe '2resize ' . ((&lines * 15 + 17) / 34)
+exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+exe 'vert 3resize ' . ((&columns * 106 + 106) / 212)
 tabnext 1
 set stal=1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'

@@ -83,3 +83,4 @@ def get_vertical_line_positions(n_neurons, column_size=1, column_center=(-1,0)):
 
     positions = np.array( [x_positions, y_positions] ).T
     return positions
+

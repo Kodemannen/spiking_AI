@@ -1,0 +1,1 @@
+move position creation to its own function

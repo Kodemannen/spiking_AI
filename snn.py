@@ -599,8 +599,8 @@ class SNN:
 def spike_train_gen(sim_time):
     train = []
     t=0.1
-    while t < sim_time:
-        dt = 100 * abs(np.random.normal())
+    while t < sim_time / 4 * 3:
+        dt = 1000 * abs(np.random.normal())
         t += dt
         if t < sim_time:
             train.append(t)
@@ -611,8 +611,8 @@ def run():
 
     #----------------------------------------------------------------------
     # Setting up SNN instance
-    snn = SNN(n_excitatory=100, 
-              n_inhibitory=30, 
+    snn = SNN(n_excitatory=75, 
+              n_inhibitory=10, 
               n_inputs=8, 
               n_outputs=4,
               )
