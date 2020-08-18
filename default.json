@@ -30,7 +30,7 @@
         "model": "tsodyks_synapse",
         "weight": {
             "distribution": "normal",
-            "mu": 50.0,
+            "mu": 10.0,
             "sigma": 35.0
         },
         "delay": {
@@ -51,7 +51,7 @@
         "model": "tsodyks_synapse",
         "weight": {
             "distribution": "normal",
-            "mu": 250.0,
+            "mu": 25.0,
             "sigma": 175.0
         },
         "delay": {
@@ -114,8 +114,8 @@
         "model": "static_synapse",
         "weight": {
             "distribution": "uniform",
-            "low": 0.250,
-            "high": 0.750
+            "low": 0.0250,
+            "high": 0.0750
         },
         "delay": {
             "distribution": "normal_clipped_to_boundary",

@@ -3,7 +3,7 @@ from joblib import delayed, Parallel
 import sys
 
 import numpy as np
-#np.random.seed(13)
+np.random.seed(13)
 
 import nest
 nest.set_verbosity("M_WARNING")
@@ -62,7 +62,8 @@ class SNN:
                  n_inhibitory=4, 
                  n_inputs=10, 
                  n_outputs=10, 
-                 use_noise=False
+                 use_noise=False,
+                 dt=0.1
                  ):
         """
         Main pop : consists of excitatory and inhibitory synapses
@@ -74,9 +75,13 @@ class SNN:
         self.n_inhibitory = n_inhibitory
         self.n_inputs = n_inputs
         self.n_outputs = n_outputs
+        self.dt = dt
         self.use_noise = use_noise
 
         nest.ResetKernel()
+        nest.SetKernelStatus(dict(
+                            resolution=dt,
+                            ))
 
         
         #-----------------------------------------------
@@ -132,6 +137,7 @@ class SNN:
         syn_spec_ie = self.snn_conf['syn_spec_ie']
         syn_spec_ii = self.snn_conf['syn_spec_ii']
         syn_spec_inp = self.snn_conf['syn_spec_inp']
+
 
         rule_dict_e = self.snn_conf['rule_dict_e']
         rule_dict_i = self.snn_conf['rule_dict_i']
@@ -259,7 +265,9 @@ class SNN:
 
         conn_pairs = dict()
         for key in conn_groups:
-            conn_pairs[key] = get_conn_pairs(conn_groups[key])    
+            conn_pairs[key] = get_conn_pairs(conn_groups[key])   # shape (n_connections,2) 
+        # conn_pairs[key] is the list with all connections from pop i to pop j
+        # and each conn_pairs[key][k] is a tuple containing sender and receiver  
 
 
         #-----------------------------------------------
@@ -333,6 +341,11 @@ class SNN:
         self.positions_input = positions_input
         self.positions_output = positions_output
 
+        self.positions = dict(excitatory = positions_e,
+                              inhibitory = positions_i,
+                              input = positions_input,
+                              output = positions_output)
+
         self.conn_pairs = conn_pairs
         self.conn_lines = conn_lines
             
@@ -358,8 +371,10 @@ class SNN:
                    color='grey', 
                    label='Output')
 
-        # plt.axis('off')
+        #plt.axis('off')
         ax.set_aspect('equal')
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
         #ax.legend()
 
         self.base_ax = ax
@@ -417,13 +432,12 @@ class SNN:
         e_spike_times = get_spike_times_by_id(spikes_e, self.e_population)
         i_spike_times = get_spike_times_by_id(spikes_i, self.i_population)
 
-        input_spike_times = get_spike_times_by_id(
-                                                  spikes_input, 
+        input_spike_times = get_spike_times_by_id(spikes_input, 
                                                   self.input_nodes)
 
-        output_spike_times = get_spike_times_by_id(
-                                                  spikes_output, 
-                                                  self.output_nodes)
+        output_spike_times = get_spike_times_by_id(spikes_output, 
+                                                   self.output_nodes)
+
 
         if len(e_spike_times) == 0:
             print('no spikes')
@@ -446,6 +460,7 @@ class SNN:
 
     def simulate(self, input_spikes, sim_time, T=0):
 
+        self.sim_time = sim_time
         input_spike_times = [{'spike_times': np.round(spt, 1) + T } 
                                             for spt in input_spikes]
 
@@ -454,12 +469,69 @@ class SNN:
         return self.__run_simulation(sim_time, T=T)
 
     
+    def generate_spike_frames(self, 
+                              e_spike_times,      # shape=(n_excitatory, spike_times) 
+                              i_spike_times,      
+                              input_spike_times, 
+                              output_spike_times,
+                              fps=30): 
+        dt_anim = 1/fps * 1000          # in ms
+        # should use the // operator to make a grid thing
+        timesteps_anim = np.arange(0, self.sim_time, step=dt_anim)
+
+
+        N = len(timesteps_anim)
+
+        self.frames = dict(
+            excitatory = [np.zeros(shape=(self.n_excitatory, N), dtype=np.int), e_spike_times],
+            inhibitory = [np.zeros(shape=(self.n_inhibitory, N), dtype=np.int), i_spike_times],
+            input = [np.zeros(shape=(self.n_inputs, N), dtype=np.int), input_spike_times],
+            output = [np.zeros(shape=(self.n_outputs, N), dtype=np.int), output_spike_times]
+            )
+
+        for key in self.frames: 
+            frame_matrix = self.frames[key][0]
+            spike_times = self.frames[key][1]   # shape (n_nodes, x)
+
+
+            #----------------------------------------------
+            # Rounding up to grid:
+            rounded = (spike_times // dt_anim) * dt_anim   # rounded to the left
+            #rest = spike_times - rounded
+            #to_add = (rest > (dt_anim/2)) * dt_anim     
+            #rounded = rounded + to_add                     # rounded to closest 
+
+
+            #-------------------------------------------------
+            # Insert spike times at the correct indices in frame_matrix
+            for i in range(N):
+                t = timesteps_anim[i]
+                n_nodes = spike_times.shape[0]
+
+                for j in range(n_nodes):
+                    if t in rounded[j]:
+                        frame_matrix[j, i] = 1
+
+                    #n_spikes = np.sum(np.where(t == rounded[j]))
+                    #frame_matrix[j,i] = n_spikes
+                    #print(n_spikes)
+
+
+        self.timesteps_anim = timesteps_anim
+
+        return self.frames, self.timesteps_anim 
+                
+                
+               
+
     def animate(self, 
                 e_spike_times,      # shape=(n_excitatory, spike_times) 
                 i_spike_times,      
                 input_spike_times, 
-                output_spike_times):
-        
+                output_spike_times,
+                ):
+
+        fps = 30
         base_ax = self.base_ax
         base_fig = self.base_fig
 
@@ -467,19 +539,61 @@ class SNN:
 
         full_conn_lines = self.conn_lines   # basis
 
-        print(e_spike_times.shape)
-
         # Each timestep we want to take all the neurons that fired and 
         # visualize them and their synapses activating
+        #dt_anim = 1/fps
+        #timesteps = np.arange(self.dt_anim, self.sim_time+self.dt_anim, step=self.dt_anim) 
+        
+
+        #N = len(timesteps)
+        # shape=(n_excitatory, spike_times) 
+        frames, timesteps_anim = self.generate_spike_frames(e_spike_times, 
+                                                            i_spike_times,      
+                                                            input_spike_times, 
+                                                            output_spike_times,
+                                                            fps)
+
+
+        N = len(timesteps_anim)
+        indices = np.arange(0, N)
 
         def update_frame(i):
-            pass
+
+            # t = timesteps[i]
+            
+            print(i/N*100)
+            
+            ax.clear()
+            #print(i)
+
+            for key in self.frames:
+
+                pos = self.positions[key]
+
+                nodes_state = self.frames[key][0][:,int(i)]
+                #print(nodes_state.shape)
+                nodes_active = np.argwhere(nodes_state==1.)[:,0]
+                print(nodes_active.shape)
+                
+                xs = pos[nodes_active][:,0]
+                ys = pos[nodes_active][:,1]
+
+                ax.scatter(xs, ys)
+
+                
+            
+
+        Writer = animation.writers['ffmpeg']
+        writer = Writer(fps=fps, metadata=dict(artist="Me"), bitrate=850)
+
+        ani = animation.FuncAnimation(fig, update_frame, indices)   #, fargs=(count,indices))
+        ani.save("spiking_anim.mp4", writer=writer, dpi=150)
 
 
 
 def spike_train_gen(sim_time):
     train = []
-    t=0
+    t=0.1
     while t < sim_time:
         dt = abs(np.random.normal())
         t += dt
@@ -488,7 +602,7 @@ def spike_train_gen(sim_time):
     return train
 
 
-def test():
+def run():
 
     #----------------------------------------------------------------------
     # Setting up SNN instance
@@ -517,7 +631,7 @@ def test():
                             )
 
     # Dummy input spikes:
-    sim_time = 100
+    sim_time = 10 * 1000
     inputs = [spike_train_gen(sim_time) for i in range(snn.n_inputs)]
 
     #----------------------------------------------------------------------
@@ -538,4 +652,5 @@ def test():
 
 
 if __name__ == "__main__":
-    test()
+    run()
+

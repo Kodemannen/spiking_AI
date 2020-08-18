@@ -1,0 +1,167 @@
+let SessionLoad = 1
+let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
+let v:this_session=expand("<sfile>:p")
+silent only
+cd ~/repos/spiking_AI
+if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
+  let s:wipebuf = bufnr('%')
+endif
+set shortmess=aoO
+badd +1 functions.py
+badd +1 snn.py
+badd +1 animate_image.py
+badd +1 default.json
+argglobal
+%argdel
+$argadd functions.py
+$argadd snn.py
+set stal=2
+edit snn.py
+set splitbelow splitright
+wincmd _ | wincmd |
+vsplit
+1wincmd h
+wincmd w
+wincmd _ | wincmd |
+split
+1wincmd k
+wincmd w
+set nosplitbelow
+set nosplitright
+wincmd t
+set winminheight=0
+set winheight=1
+set winminwidth=0
+set winwidth=1
+exe 'vert 1resize ' . ((&columns * 104 + 106) / 212)
+exe '2resize ' . ((&lines * 8 + 25) / 51)
+exe 'vert 2resize ' . ((&columns * 107 + 106) / 212)
+exe '3resize ' . ((&lines * 39 + 25) / 51)
+exe 'vert 3resize ' . ((&columns * 107 + 106) / 212)
+argglobal
+if bufexists("snn.py") | buffer snn.py | else | edit snn.py | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+let s:l = 542 - ((35 * winheight(0) + 24) / 48)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+542
+normal! 017|
+wincmd w
+argglobal
+if bufexists("animate_image.py") | buffer animate_image.py | else | edit animate_image.py | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+let s:l = 71 - ((0 * winheight(0) + 4) / 8)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+71
+normal! 05|
+wincmd w
+argglobal
+if bufexists("functions.py") | buffer functions.py | else | edit functions.py | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+let s:l = 10 - ((1 * winheight(0) + 19) / 39)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+10
+normal! 09|
+wincmd w
+exe 'vert 1resize ' . ((&columns * 104 + 106) / 212)
+exe '2resize ' . ((&lines * 8 + 25) / 51)
+exe 'vert 2resize ' . ((&columns * 107 + 106) / 212)
+exe '3resize ' . ((&lines * 39 + 25) / 51)
+exe 'vert 3resize ' . ((&columns * 107 + 106) / 212)
+tabedit default.json
+set splitbelow splitright
+wincmd _ | wincmd |
+vsplit
+1wincmd h
+wincmd w
+set nosplitbelow
+set nosplitright
+wincmd t
+set winminheight=0
+set winheight=1
+set winminwidth=0
+set winwidth=1
+exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
+exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
+argglobal
+if bufexists("default.json") | buffer default.json | else | edit default.json | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+let s:l = 118 - ((25 * winheight(0) + 24) / 48)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+118
+normal! 010|
+wincmd w
+argglobal
+if bufexists("animate_image.py") | buffer animate_image.py | else | edit animate_image.py | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+let s:l = 91 - ((0 * winheight(0) + 24) / 48)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+91
+normal! 0
+wincmd w
+exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
+exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
+tabnext 1
+set stal=1
+if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
+  silent exe 'bwipe ' . s:wipebuf
+endif
+unlet! s:wipebuf
+set winheight=1 winwidth=20 winminheight=1 winminwidth=1 shortmess=filnxtToOF
+let s:sx = expand("<sfile>:p:r")."x.vim"
+if file_readable(s:sx)
+  exe "source " . fnameescape(s:sx)
+endif
+let &so = s:so_save | let &siso = s:siso_save
+doautoall SessionLoadPost
+unlet SessionLoad
+" vim: set ft=vim :
