@@ -187,6 +187,8 @@ class SNN:
 
 
     def plot_connectome(self, 
+                        ax,
+
                         radius_e=0.8, 
                         radius_i=0.5, 
                         
@@ -203,6 +205,7 @@ class SNN:
         Plots all the nodes and connections in the SNN
         '''
 
+        np.random.seed(0)
         #-----------------------------------------------
         # Random generating main pop positions:
         positions_e = get_circular_positions(
@@ -273,7 +276,6 @@ class SNN:
         #-----------------------------------------------
         #-------------------Plotting--------------------
 
-        fig, ax = plt.subplots()
 
         # Plotting connection lines:
         conn_lines = dict()
@@ -377,11 +379,12 @@ class SNN:
         ax.set_yticklabels([])
         #ax.legend()
 
-        self.base_ax = ax
-        self.base_fig = fig
-        plt.savefig('test.png')
+        #self.base_ax = ax
+        #self.base_fig = fig
+        #plt.savefig('test.png')
+        self.ax = ax
 
-        return None
+        return self.ax
     
 
     def __run_simulation(self, sim_time=100, T=0):
@@ -532,10 +535,9 @@ class SNN:
                 ):
 
         fps = 30
-        base_ax = self.base_ax
-        base_fig = self.base_fig
 
         fig, ax = plt.subplots()
+        #self.plot_connectome(ax)
 
         full_conn_lines = self.conn_lines   # basis
 
@@ -564,6 +566,7 @@ class SNN:
             print(i/N*100)
             
             ax.clear()
+            self.plot_connectome(ax)
             #print(i)
 
             for key in self.frames:
@@ -573,12 +576,14 @@ class SNN:
                 nodes_state = self.frames[key][0][:,int(i)]
                 #print(nodes_state.shape)
                 nodes_active = np.argwhere(nodes_state==1.)[:,0]
-                print(nodes_active.shape)
                 
                 xs = pos[nodes_active][:,0]
                 ys = pos[nodes_active][:,1]
 
-                ax.scatter(xs, ys)
+                ax.scatter(xs, ys, color='black')
+
+            ax.set_xlim([-1.9, 1.9])
+            ax.set_ylim([-1., 2.5])
 
                 
             
@@ -595,7 +600,7 @@ def spike_train_gen(sim_time):
     train = []
     t=0.1
     while t < sim_time:
-        dt = abs(np.random.normal())
+        dt = 100 * abs(np.random.normal())
         t += dt
         if t < sim_time:
             train.append(t)
@@ -614,9 +619,11 @@ def run():
 
     #----------------------------------------------------------------------
     # Plotting:
+    fig, ax = plt.subplots()
     plotting = True
     if plotting:
-        snn.plot_connectome( 
+        snn.plot_connectome(ax, 
+
                             radius_e=0.8, 
                             radius_i=0.5, 
                             
@@ -629,6 +636,7 @@ def run():
                             output_column_size=1/8 * 4, 
                             output_column_center=(1.5,0.9),
                             )
+    plt.savefig('test.png')
 
     # Dummy input spikes:
     sim_time = 10 * 1000
