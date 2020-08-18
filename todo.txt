@@ -1,1 +1,5 @@
-move position creation to its own function
+move position creation to its own function - check
+
+make function for sorting connection lines after senders 
+
+

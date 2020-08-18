@@ -185,27 +185,25 @@ class SNN:
 
         return None
 
+    def set_positions(self, 
+                      seed=0,
 
-    def plot_connectome(self, 
-                        ax,
+                      radius_e=0.8, 
+                      radius_i=0.5, 
+                      
+                      center_e=(0,0), 
+                      center_i=(0,2), 
 
-                        radius_e=0.8, 
-                        radius_i=0.5, 
-                        
-                        center_e=(0,0), 
-                        center_i=(0,2), 
+                      input_column_size=1, 
+                      input_column_center=(-1.5,0.9),
 
-                        input_column_size=1, 
-                        input_column_center=(-1.5,0.9),
+                      output_column_size=1, 
+                      output_column_center=(1.5,0.9),
 
-                        output_column_size=1, 
-                        output_column_center=(1.5,0.9),
-                        ):
-        '''
-        Plots all the nodes and connections in the SNN
-        '''
+                      ):
 
-        np.random.seed(0)
+        np.random.seed(seed)
+
         #-----------------------------------------------
         # Random generating main pop positions:
         positions_e = get_circular_positions(
@@ -238,14 +236,138 @@ class SNN:
                                             column_size=output_column_size,
                                             column_center=output_column_center)
 
+        self.positions_e = positions_e
+        self.positions_i = positions_i
+        self.positions_input = positions_input
+        self.positions_output = positions_output
+
+        self.positions = dict(excitatory = positions_e,
+                              inhibitory = positions_i,
+                              input = positions_input,
+                              output = positions_output)
+        return 0
+
+    
+    def get_conn_lines_by_sender(self):
+        pass
+
+
+    def get_conn_lines(self):
+
+        #-----------------------------------------------
+        # Connection storage:
+
+        conn_groups = dict(
+            conn_ee = nest.GetConnections(source=self.e_population, 
+                                          target=self.e_population),
+            conn_ei = nest.GetConnections(source=self.e_population, 
+                                          target=self.i_population),
+            conn_ii = nest.GetConnections(source=self.i_population, 
+                                          target=self.i_population),
+            conn_ie = nest.GetConnections(source=self.i_population, 
+                                          target=self.e_population),
+            conn_inp = nest.GetConnections(source=self.input_nodes, 
+                                          target=self.e_population),
+            conn_output = nest.GetConnections(source=self.e_population, 
+                                          target=self.output_nodes),
+            )
+
+        conn_pairs = dict()
+        for key in conn_groups:
+            conn_pairs[key] = get_conn_pairs(conn_groups[key])   # shape (n_connections,2) 
+        # conn_pairs[key] is the list with all connections from pop i to pop j
+        # and each conn_pairs[key][k] is a tuple containing sender and receiver  
+
+
+        #-----------------------------------------------
+        #-------------------Plotting--------------------
+
+
+        # Plotting connection lines:
+        conn_lines = dict()
+        for key in conn_pairs:
+
+            if key=='conn_inp':
+                sender_type = 'input'
+                receiver_type = 'e'
+
+            elif key=='conn_output':
+                sender_type = 'e'
+                receiver_type = 'output'
+
+            else:
+                sender_type = key[-2]
+                receiver_type = key[-1]
+            
+            pairs = conn_pairs[key]
+            n_pairs = len(pairs)
+            lines = np.zeros(shape=(n_pairs, 2, 2))
+            
+            for i in range(n_pairs):
+                pair = pairs[i]
+
+                #--------------------------------------
+                # Getting sender:
+                if sender_type=='e':
+                    source_pos_index = pair[0] - self.e_population[0] 
+                    source_pos = positions_e[source_pos_index]
+
+                elif sender_type=='i':
+                    source_pos_index = pair[0] - self.i_population[0]
+                    source_pos = positions_i[source_pos_index]
+
+                elif sender_type=='input': 
+                    source_pos_index = pair[0] - self.input_nodes[0]
+                    source_pos = positions_input[source_pos_index]
+
+                #--------------------------------------
+                # Getting receiver:
+                if receiver_type=='e':
+                    receiver_pos_index = pair[1] - self.e_population[0]
+                    receiver_pos = positions_e[receiver_pos_index]
+
+                elif receiver_type=='i':
+                    receiver_pos_index = pair[1] - self.i_population[0]
+                    receiver_pos = positions_i[receiver_pos_index]
+
+                elif receiver_type=='output':
+                    receiver_pos_index = pair[1] - self.output_nodes[0] 
+                    receiver_pos = positions_output[receiver_pos_index]
+
+                lines[i, 0] = source_pos 
+                lines[i, 1] = receiver_pos
+
+
+            conn_lines[key] = lines
+            #lc = mc.LineCollection(lines, linewidths=0.1) # choose color here
+            #ax.add_collection(lc) 
+            #_______________________________________________
+
+        self.conn_pairs = conn_pairs
+        self.conn_lines = conn_lines
+
+        return 0
+
+
+
+    def plot_connectome(self, ax):
+        '''
+        Plots all the nodes and connections in the SNN
+        '''
+
+
         #connections_.. = nest.GetConnections(target=target, source=source)   
         # format: (source-gid, target-gid, target-thread, synapse-id, port)
         # For an individual synapse we get:
             # source = connections_..[i][0]
             # target = connections_..[i][1]
 
+        positions_e = self.positions_e
+        positions_i = self.positions_i
+        positions_input = self.positions_input
+        positions_output = self.positions_output
 
-        nest.GetConnections(self.e_population)
+        #nest.GetConnections(self.e_population)
 
 
         #-----------------------------------------------
@@ -338,15 +460,6 @@ class SNN:
             #_______________________________________________
 
 
-        self.positions_e = positions_e
-        self.positions_i = positions_i
-        self.positions_input = positions_input
-        self.positions_output = positions_output
-
-        self.positions = dict(excitatory = positions_e,
-                              inhibitory = positions_i,
-                              input = positions_input,
-                              output = positions_output)
 
         self.conn_pairs = conn_pairs
         self.conn_lines = conn_lines
@@ -382,9 +495,9 @@ class SNN:
         #self.base_ax = ax
         #self.base_fig = fig
         #plt.savefig('test.png')
-        self.ax = ax
+        #self.ax = ax
 
-        return self.ax
+        return 0
     
 
     def __run_simulation(self, sim_time=100, T=0):
@@ -596,16 +709,6 @@ class SNN:
 
 
 
-def spike_train_gen(sim_time):
-    train = []
-    t=0.1
-    while t < sim_time / 4 * 3:
-        dt = 1000 * abs(np.random.normal())
-        t += dt
-        if t < sim_time:
-            train.append(t)
-    return train
-
 
 def run():
 
@@ -618,32 +721,37 @@ def run():
               )
 
     #----------------------------------------------------------------------
-    # Plotting:
-    fig, ax = plt.subplots()
+    # Initializing positions:
+    snn.set_positions(radius_e=0.8, 
+                      radius_i=0.5, 
+                        
+                      center_e=(0,0), 
+                      center_i=(0,1.5), 
+
+                      input_column_size=1, 
+                      input_column_center=(-1.5,0.9),
+
+                      output_column_size=1/8 * 4, 
+                      output_column_center=(1.5,0.9),
+                      )
+
+    #----------------------------------------------------------------------
+    # Plotting connectome as image:
     plotting = True
     if plotting:
-        snn.plot_connectome(ax, 
+        fig, ax = plt.subplots()
+        snn.plot_connectome(ax)
+        plt.savefig('test.png')
 
-                            radius_e=0.8, 
-                            radius_i=0.5, 
-                            
-                            center_e=(0,0), 
-                            center_i=(0,1.5), 
 
-                            input_column_size=1, 
-                            input_column_center=(-1.5,0.9),
-
-                            output_column_size=1/8 * 4, 
-                            output_column_center=(1.5,0.9),
-                            )
-    plt.savefig('test.png')
-
-    # Dummy input spikes:
-    sim_time = 10 * 1000
-    inputs = [spike_train_gen(sim_time) for i in range(snn.n_inputs)]
 
     #----------------------------------------------------------------------
     # Simulating:
+    sim_time = 10 * 1000
+    
+    # Dummy input spikes:
+    inputs = [spike_train_gen(sim_time) for i in range(snn.n_inputs)]
+
     T = 0
     sim_data = snn.simulate(input_spikes=inputs, sim_time=sim_time, T=T)
     e_spike_times = np.array(sim_data[0])
@@ -652,7 +760,7 @@ def run():
     output_spike_times = np.array(sim_data[3])
     
     #----------------------------------------------------------------------
-    # Animating:
+    # Animating activity:
     snn.animate(e_spike_times, 
                 i_spike_times, 
                 input_spike_times, 

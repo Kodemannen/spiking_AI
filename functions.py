@@ -73,6 +73,7 @@ def get_circular_positions_uniform(n_neurons, radius=1, center=(0,0)):
     return connection_pairs 
 
     
+
 def get_vertical_line_positions(n_neurons, column_size=1, column_center=(-1,0)):
         
     x_positions = np.zeros(shape=(n_neurons)) 
@@ -83,4 +84,16 @@ def get_vertical_line_positions(n_neurons, column_size=1, column_center=(-1,0)):
 
     positions = np.array( [x_positions, y_positions] ).T
     return positions
+
+
+
+def spike_train_gen(sim_time):
+    train = []
+    t=0.1
+    while t < sim_time / 4 * 3:
+        dt = 1000 * abs(np.random.normal())
+        t += dt
+        if t < sim_time:
+            train.append(t)
+    return train
 
