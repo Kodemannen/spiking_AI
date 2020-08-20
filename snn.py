@@ -3,7 +3,7 @@ from joblib import delayed, Parallel
 import sys
 
 import numpy as np
-np.random.seed(13)
+#np.random.seed(13)
 
 import nest
 nest.set_verbosity("M_WARNING")
@@ -75,6 +75,9 @@ class SNN:
         self.n_inhibitory = n_inhibitory
         self.n_inputs = n_inputs
         self.n_outputs = n_outputs
+
+        self.n_total_nodes = n_excitatory + n_inhibitory + n_inputs + n_outputs
+
         self.dt = dt
         self.use_noise = use_noise
 
@@ -95,6 +98,7 @@ class SNN:
 
         #-----------------------------------------------
         # Creating nodes:
+        # Must be created first and in the correct order.
         e_lif_params = self.snn_conf["e_lif_params"]
         i_lif_params = self.snn_conf["i_lif_params"]
 
@@ -112,6 +116,26 @@ class SNN:
         self.output_nodes = nest.Create('iaf_psc_alpha', 
                                         n_outputs, 
                                         e_lif_params)
+
+        #-----------------------------------------------
+        # Useful groupings:
+        self.all_nodes = (self.e_population 
+                          + self.i_population 
+                          + self.input_nodes
+                          + self.output_nodes) 
+
+        self.all_source_nodes = (self.e_population 
+                                 + self.i_population 
+                                 + self.input_nodes) 
+
+        self.all_target_nodes = (self.e_population 
+                                 + self.i_population 
+                                 + self.output_nodes) 
+
+        self.populations = dict(excitatory=self.e_population, 
+                                inhibitory=self.i_population, 
+                                input=self.input_nodes, 
+                                output=self.output_nodes)
 
         assert (self.e_population[0] == 1), '''Nodes must be created 
                                             first and has to be in the order 
@@ -185,6 +209,8 @@ class SNN:
 
         return None
 
+
+
     def set_positions(self, 
                       seed=0,
 
@@ -199,155 +225,125 @@ class SNN:
 
                       output_column_size=1, 
                       output_column_center=(1.5,0.9),
-
                       ):
+
+
+        """
+        Randomizes positions for all nodes
+        """
 
         np.random.seed(seed)
 
         #-----------------------------------------------
         # Random generating main pop positions:
-        positions_e = get_circular_positions(
-                                            n_neurons=self.n_excitatory, 
-                                            radius=radius_e, 
-                                            center=center_e)
+        positions_e = get_circular_positions(n_neurons=self.n_excitatory, 
+                                             radius=radius_e, 
+                                             center=center_e)
 
-        positions_i = get_circular_positions(
-                                            n_neurons=self.n_inhibitory, 
-                                            radius=radius_i, 
-                                            center=center_i)
+        positions_i = get_circular_positions(n_neurons=self.n_inhibitory, 
+                                             radius=radius_i, 
+                                             center=center_i)
 
-            # The relationship between neuron GID and position is: 
-
-                # For excitatory:
-                    # position index = GID - 1
-
-                # For inhibitory:
-                    # position index = GID - 1 - self.n_excitatory
-
+        #-----------------------------------------------
         # Generating input column:
-        positions_input = get_vertical_line_positions(
-                                            n_neurons=self.n_inputs,
-                                            column_size=input_column_size,
-                                            column_center=input_column_center)
+        positions_input = get_vertical_line_positions(n_neurons=self.n_inputs,
+                                                      column_size=input_column_size,
+                                                      column_center=input_column_center)
 
+        #-----------------------------------------------
         # Generating output column:
-        positions_output = get_vertical_line_positions(
-                                            n_neurons=self.n_outputs,
-                                            column_size=output_column_size,
-                                            column_center=output_column_center)
+        positions_output = get_vertical_line_positions(n_neurons=self.n_outputs,
+                                                       column_size=output_column_size,
+                                                       column_center=output_column_center)
 
         self.positions_e = positions_e
         self.positions_i = positions_i
         self.positions_input = positions_input
         self.positions_output = positions_output
 
+        
+
+        #-----------------------------------------------
+        # Storing positions by population in a dictionary
         self.positions = dict(excitatory = positions_e,
                               inhibitory = positions_i,
                               input = positions_input,
                               output = positions_output)
+
+
+        #-----------------------------------------------
+        # storing all positions in a single box:
+        self.all_positions = np.zeros((self.n_total_nodes, 2))
+        self.all_positions[np.array(self.e_population)-1] = positions_e
+        self.all_positions[np.array(self.i_population)-1] = positions_i
+        self.all_positions[np.array(self.input_nodes)-1] = positions_input
+        self.all_positions[np.array(self.output_nodes)-1] = positions_output
+
+
         return 0
 
     
-    def get_conn_lines_by_sender(self):
+    def get_conn_lines(self):
+
+        """
+        Function for creating lines between each pair of nodes that are connected by a synapse.
+        Stores the lines in a dictionary categorized by the population that the pre-synaptic node
+        belongs to, so that they can be fetched by the index of a sender.
+        """
+
+        lines_box = []
+        for node in self.all_source_nodes:
+            #conns.append
+            conn = np.array(nest.GetConnections(source=[node], target=self.all_target_nodes))
+            n = len(conn)
+
+            if n==0:            # Dead node. Doesn't send.
+                continue
+
+            sources = conn[:,0]
+            targets = conn[:,1]
+
+            source_positions = self.all_positions[sources-1]
+            target_positions = self.all_positions[targets-1]
+
+            lines = np.zeros((n, 2, 2))
+            lines[:,0] = source_positions
+            lines[:,1] = target_positions
+
+            lines_box.append(lines)
+
+        self.lines_box = np.array(lines_box)
+        
+        return 0
+
+
+
+    def plot_nodes(self, ax, indices):
         pass
 
 
-    def get_conn_lines(self):
 
-        #-----------------------------------------------
-        # Connection storage:
-
-        conn_groups = dict(
-            conn_ee = nest.GetConnections(source=self.e_population, 
-                                          target=self.e_population),
-            conn_ei = nest.GetConnections(source=self.e_population, 
-                                          target=self.i_population),
-            conn_ii = nest.GetConnections(source=self.i_population, 
-                                          target=self.i_population),
-            conn_ie = nest.GetConnections(source=self.i_population, 
-                                          target=self.e_population),
-            conn_inp = nest.GetConnections(source=self.input_nodes, 
-                                          target=self.e_population),
-            conn_output = nest.GetConnections(source=self.e_population, 
-                                          target=self.output_nodes),
-            )
-
-        conn_pairs = dict()
-        for key in conn_groups:
-            conn_pairs[key] = get_conn_pairs(conn_groups[key])   # shape (n_connections,2) 
-        # conn_pairs[key] is the list with all connections from pop i to pop j
-        # and each conn_pairs[key][k] is a tuple containing sender and receiver  
+    def plot_all_nodes(self, ax):
+        
+        for key in self.positions:
+            pos = self.positions[key]
+            ax.scatter(pos[:,0],
+                       pos[:,1], 
+                       label=key)
+        return 0     
 
 
-        #-----------------------------------------------
-        #-------------------Plotting--------------------
 
+    def plot_all_lines(self, ax):
 
-        # Plotting connection lines:
-        conn_lines = dict()
-        for key in conn_pairs:
+        n = len(self.lines_box)
+        for i in range(n):
+            lines = self.lines_box[i]
 
-            if key=='conn_inp':
-                sender_type = 'input'
-                receiver_type = 'e'
-
-            elif key=='conn_output':
-                sender_type = 'e'
-                receiver_type = 'output'
-
-            else:
-                sender_type = key[-2]
-                receiver_type = key[-1]
-            
-            pairs = conn_pairs[key]
-            n_pairs = len(pairs)
-            lines = np.zeros(shape=(n_pairs, 2, 2))
-            
-            for i in range(n_pairs):
-                pair = pairs[i]
-
-                #--------------------------------------
-                # Getting sender:
-                if sender_type=='e':
-                    source_pos_index = pair[0] - self.e_population[0] 
-                    source_pos = positions_e[source_pos_index]
-
-                elif sender_type=='i':
-                    source_pos_index = pair[0] - self.i_population[0]
-                    source_pos = positions_i[source_pos_index]
-
-                elif sender_type=='input': 
-                    source_pos_index = pair[0] - self.input_nodes[0]
-                    source_pos = positions_input[source_pos_index]
-
-                #--------------------------------------
-                # Getting receiver:
-                if receiver_type=='e':
-                    receiver_pos_index = pair[1] - self.e_population[0]
-                    receiver_pos = positions_e[receiver_pos_index]
-
-                elif receiver_type=='i':
-                    receiver_pos_index = pair[1] - self.i_population[0]
-                    receiver_pos = positions_i[receiver_pos_index]
-
-                elif receiver_type=='output':
-                    receiver_pos_index = pair[1] - self.output_nodes[0] 
-                    receiver_pos = positions_output[receiver_pos_index]
-
-                lines[i, 0] = source_pos 
-                lines[i, 1] = receiver_pos
-
-
-            conn_lines[key] = lines
-            #lc = mc.LineCollection(lines, linewidths=0.1) # choose color here
-            #ax.add_collection(lc) 
-            #_______________________________________________
-
-        self.conn_pairs = conn_pairs
-        self.conn_lines = conn_lines
+            lc = mc.LineCollection(lines, linewidths=0.1) # choose color here
+            ax.add_collection(lc) 
 
         return 0
-
 
 
     def plot_connectome(self, ax):
@@ -355,136 +351,15 @@ class SNN:
         Plots all the nodes and connections in the SNN
         '''
 
-
-        #connections_.. = nest.GetConnections(target=target, source=source)   
-        # format: (source-gid, target-gid, target-thread, synapse-id, port)
-        # For an individual synapse we get:
-            # source = connections_..[i][0]
-            # target = connections_..[i][1]
-
-        positions_e = self.positions_e
-        positions_i = self.positions_i
-        positions_input = self.positions_input
-        positions_output = self.positions_output
-
-        #nest.GetConnections(self.e_population)
-
-
-        #-----------------------------------------------
-        # Connection storage:
-
-        conn_groups = dict(
-            conn_ee = nest.GetConnections(source=self.e_population, 
-                                          target=self.e_population),
-            conn_ei = nest.GetConnections(source=self.e_population, 
-                                          target=self.i_population),
-            conn_ii = nest.GetConnections(source=self.i_population, 
-                                          target=self.i_population),
-            conn_ie = nest.GetConnections(source=self.i_population, 
-                                          target=self.e_population),
-            conn_inp = nest.GetConnections(source=self.input_nodes, 
-                                          target=self.e_population),
-            conn_output = nest.GetConnections(source=self.e_population, 
-                                          target=self.output_nodes),
-            )
-
-        conn_pairs = dict()
-        for key in conn_groups:
-            conn_pairs[key] = get_conn_pairs(conn_groups[key])   # shape (n_connections,2) 
-        # conn_pairs[key] is the list with all connections from pop i to pop j
-        # and each conn_pairs[key][k] is a tuple containing sender and receiver  
-
-
-        #-----------------------------------------------
-        #-------------------Plotting--------------------
-
-
-        # Plotting connection lines:
-        conn_lines = dict()
-        for key in conn_pairs:
-
-            if key=='conn_inp':
-                sender_type = 'input'
-                receiver_type = 'e'
-
-            elif key=='conn_output':
-                sender_type = 'e'
-                receiver_type = 'output'
-
-            else:
-                sender_type = key[-2]
-                receiver_type = key[-1]
-            
-            pairs = conn_pairs[key]
-            n_pairs = len(pairs)
-            lines = np.zeros(shape=(n_pairs, 2, 2))
-            
-            for i in range(n_pairs):
-                pair = pairs[i]
-
-                #--------------------------------------
-                # Getting sender:
-                if sender_type=='e':
-                    source_pos_index = pair[0] - self.e_population[0] 
-                    source_pos = positions_e[source_pos_index]
-
-                elif sender_type=='i':
-                    source_pos_index = pair[0] - self.i_population[0]
-                    source_pos = positions_i[source_pos_index]
-
-                elif sender_type=='input': 
-                    source_pos_index = pair[0] - self.input_nodes[0]
-                    source_pos = positions_input[source_pos_index]
-
-                #--------------------------------------
-                # Getting receiver:
-                if receiver_type=='e':
-                    receiver_pos_index = pair[1] - self.e_population[0]
-                    receiver_pos = positions_e[receiver_pos_index]
-
-                elif receiver_type=='i':
-                    receiver_pos_index = pair[1] - self.i_population[0]
-                    receiver_pos = positions_i[receiver_pos_index]
-
-                elif receiver_type=='output':
-                    receiver_pos_index = pair[1] - self.output_nodes[0] 
-                    receiver_pos = positions_output[receiver_pos_index]
-
-                lines[i, 0] = source_pos 
-                lines[i, 1] = receiver_pos
-
-
-            conn_lines[key] = lines
-            lc = mc.LineCollection(lines, linewidths=0.1) # choose color here
-            ax.add_collection(lc) 
-            #_______________________________________________
-
-
-
-        self.conn_pairs = conn_pairs
-        self.conn_lines = conn_lines
-            
-
         #-----------------------------------------------
         # Plotting nodes:
-        
-        ax.scatter(positions_e[:,0], 
-                   positions_e[:,1], 
-                   label='Excitatory')
+        self.plot_all_nodes(ax)
 
-        ax.scatter(positions_i[:,0], 
-                   positions_i[:,1], 
-                   label='Inhibitory')
 
-        ax.scatter(positions_input[:,0], 
-                   positions_input[:,1], 
-                   color='grey', 
-                   label='Input')
+        #-----------------------------------------------
+        # Plotting connection lines:
+        self.plot_all_lines(ax)
 
-        ax.scatter(positions_output[:,0], 
-                   positions_output[:,1], 
-                   color='grey', 
-                   label='Output')
 
         #plt.axis('off')
         ax.set_aspect('equal')
@@ -608,14 +483,18 @@ class SNN:
         for key in self.frames: 
             frame_matrix = self.frames[key][0]
             spike_times = self.frames[key][1]   # shape (n_nodes, x)
+            n_nodes = spike_times.shape[0]
 
 
             #----------------------------------------------
             # Rounding up to grid:
             rounded = (spike_times // dt_anim) * dt_anim   # rounded to the left
-            #rest = spike_times - rounded
-            #to_add = (rest > (dt_anim/2)) * dt_anim     
-            #rounded = rounded + to_add                     # rounded to closest 
+            
+            # Rounding to the right the ones that should be rounded to the right:
+            for i in range(n_nodes):
+                rest = spike_times[i] - rounded[i]
+                to_add = (rest > (dt_anim/2)) * dt_anim
+                rounded[i] += to_add
 
 
             #-------------------------------------------------
@@ -652,7 +531,7 @@ class SNN:
         fig, ax = plt.subplots()
         #self.plot_connectome(ax)
 
-        full_conn_lines = self.conn_lines   # basis
+        #full_conn_lines = self.conn_lines   # basis
 
         # Each timestep we want to take all the neurons that fired and 
         # visualize them and their synapses activating
@@ -685,6 +564,7 @@ class SNN:
             for key in self.frames:
 
                 pos = self.positions[key]
+                pop = self.populations[key]
 
                 nodes_state = self.frames[key][0][:,int(i)]
                 #print(nodes_state.shape)
@@ -695,12 +575,18 @@ class SNN:
 
                 ax.scatter(xs, ys, color='black')
 
+                #------------------------------------
+                # Lines:
+                #indices = nodes_active + pop[0] - 1
+                #print(indices)
+
+
             ax.set_xlim([-1.9, 1.9])
             ax.set_ylim([-1., 2.5])
 
-                
-            
 
+        #-------------------------------------------------
+        # Generating .mp4
         Writer = animation.writers['ffmpeg']
         writer = Writer(fps=fps, metadata=dict(artist="Me"), bitrate=850)
 
@@ -714,15 +600,17 @@ def run():
 
     #----------------------------------------------------------------------
     # Setting up SNN instance
-    snn = SNN(n_excitatory=75, 
-              n_inhibitory=10, 
-              n_inputs=8, 
-              n_outputs=4,
+    snn = SNN(n_excitatory=3, 
+              n_inhibitory=2, 
+              n_inputs=1, 
+              n_outputs=2,
               )
 
     #----------------------------------------------------------------------
     # Initializing positions:
-    snn.set_positions(radius_e=0.8, 
+    snn.set_positions(seed=0,#seed=np.random.randint(low=0,high=10e7),
+
+                      radius_e=0.8, 
                       radius_i=0.5, 
                         
                       center_e=(0,0), 
@@ -734,6 +622,7 @@ def run():
                       output_column_size=1/8 * 4, 
                       output_column_center=(1.5,0.9),
                       )
+    snn.get_conn_lines()
 
     #----------------------------------------------------------------------
     # Plotting connectome as image:
@@ -741,6 +630,7 @@ def run():
     if plotting:
         fig, ax = plt.subplots()
         snn.plot_connectome(ax)
+        #plt.legend(loc=4)
         plt.savefig('test.png')
 
 

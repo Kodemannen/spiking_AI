@@ -1,5 +1,9 @@
 import numpy as np
 
+def sort_connections_by_sender(conns):
+
+
+    pass
 
 def get_conn_pairs(conn_ij):
 
