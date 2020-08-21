@@ -333,6 +333,16 @@ class SNN:
         return 0     
 
 
+    def plot_lines(self, ax, sender_indices):
+          
+        for ind in sender_indices:
+            lines = self.lines_box[ind]
+
+            lc = mc.LineCollection(lines, linewidths=0.1, color='black') # choose color here
+            ax.add_collection(lc) 
+
+        return 0
+
 
     def plot_all_lines(self, ax):
 
@@ -555,7 +565,7 @@ class SNN:
 
             # t = timesteps[i]
             
-            print(i/N*100)
+            #print(i/N*100)
             
             ax.clear()
             self.plot_connectome(ax)
@@ -570,15 +580,23 @@ class SNN:
                 #print(nodes_state.shape)
                 nodes_active = np.argwhere(nodes_state==1.)[:,0]
                 
-                xs = pos[nodes_active][:,0]
-                ys = pos[nodes_active][:,1]
+                if len(nodes_active) > 0:
 
-                ax.scatter(xs, ys, color='black')
+                    xs = pos[nodes_active][:,0]
+                    ys = pos[nodes_active][:,1]
 
-                #------------------------------------
-                # Lines:
-                #indices = nodes_active + pop[0] - 1
-                #print(indices)
+                    ax.scatter(xs, ys, color='black')
+
+                    #------------------------------------
+                    # Lines:
+                    print(nodes_active)
+                    print(pop[0]
+                    indices = nodes_active + pop[0] - 1
+                    #print(indices)
+                    self.plot_lines(ax, sender_indices=indices)
+                    
+
+
 
 
             ax.set_xlim([-1.9, 1.9])
@@ -602,13 +620,13 @@ def run():
     # Setting up SNN instance
     snn = SNN(n_excitatory=3, 
               n_inhibitory=2, 
-              n_inputs=1, 
+              n_inputs=2, 
               n_outputs=2,
               )
 
     #----------------------------------------------------------------------
     # Initializing positions:
-    snn.set_positions(seed=0,#seed=np.random.randint(low=0,high=10e7),
+    snn.set_positions(seed=2,#seed=np.random.randint(low=0,high=10e7),
 
                       radius_e=0.8, 
                       radius_i=0.5, 

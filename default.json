@@ -152,8 +152,8 @@
         }
     },
     "rule_dict_e": {
-        "rule": "fixed_indegree",
-        "indegree": 2
+        "rule": "fixed_outdegree",
+        "outdegree": 4
     },
     "rule_dict_i": {
         "rule": "fixed_indegree",
@@ -161,11 +161,11 @@
     },
     "rule_dict_inp": {
         "rule": "fixed_outdegree",
-        "outdegree": 10
+        "outdegree": 5
     },
     "rule_dict_output": {
         "rule": "fixed_indegree",
-        "indegree": 10
+        "indegree": 5
     },
     "rule_dict_noise": {
         "rule": "all_to_all"
