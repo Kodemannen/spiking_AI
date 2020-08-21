@@ -565,7 +565,7 @@ class SNN:
 
             # t = timesteps[i]
             
-            #print(i/N*100)
+            print(i/N*100)
             
             ax.clear()
             self.plot_connectome(ax)
@@ -586,14 +586,13 @@ class SNN:
                     ys = pos[nodes_active][:,1]
 
                     ax.scatter(xs, ys, color='black')
-
-                    #------------------------------------
-                    # Lines:
-                    print(nodes_active)
-                    print(pop[0]
-                    indices = nodes_active + pop[0] - 1
-                    #print(indices)
-                    self.plot_lines(ax, sender_indices=indices)
+                    
+                    if not key=='output':
+                        #------------------------------------
+                        # Lines:
+                        indices = nodes_active + pop[0] - 1
+                        #print(indices)
+                        self.plot_lines(ax, sender_indices=indices)
                     
 
 
@@ -618,10 +617,10 @@ def run():
 
     #----------------------------------------------------------------------
     # Setting up SNN instance
-    snn = SNN(n_excitatory=3, 
-              n_inhibitory=2, 
-              n_inputs=2, 
-              n_outputs=2,
+    snn = SNN(n_excitatory=100, 
+              n_inhibitory=20, 
+              n_inputs=10, 
+              n_outputs=8,
               )
 
     #----------------------------------------------------------------------
