@@ -35,7 +35,7 @@
         },
         "delay": {
             "distribution": "normal_clipped_to_boundary",
-            "mu": 100.0,
+            "mu": 500.0,
             "sigma": 20.0,
             "low": 3.0,
             "high": 200.0
@@ -51,12 +51,12 @@
         "model": "tsodyks_synapse",
         "weight": {
             "distribution": "normal",
-            "mu": 25.0,
-            "sigma": 175.0
+            "mu": 1.0,
+            "sigma": 10.0
         },
         "delay": {
             "distribution": "normal_clipped_to_boundary",
-            "mu": 100.0,
+            "mu": 500.0,
             "sigma": 20.0,
             "low": 3.0,
             "high": 200.0
@@ -73,11 +73,11 @@
         "weight": {
             "distribution": "normal",
             "mu": -200.0,
-            "sigma": 140.0
+            "sigma": 40.0
         },
         "delay": {
             "distribution": "normal_clipped_to_boundary",
-            "mu": 100.0,
+            "mu": 500.0,
             "sigma": 20.0,
             "low": 3.0,
             "high": 200.0
@@ -94,11 +94,11 @@
         "weight": {
             "distribution": "normal",
             "mu": -200.0,
-            "sigma": 140.0
+            "sigma": 40.0
         },
         "delay": {
             "distribution": "normal_clipped_to_boundary",
-            "mu": 100.0,
+            "mu": 500.0,
             "sigma": 20.0,
             "low": 3.0,
             "high": 200.0
@@ -114,12 +114,12 @@
         "model": "static_synapse",
         "weight": {
             "distribution": "uniform",
-            "low": 2.50,
-            "high": 7.50
+            "low": 0.50,
+            "high": 2.50
         },
         "delay": {
             "distribution": "normal_clipped_to_boundary",
-            "mu": 100.0,
+            "mu": 500.0,
             "sigma": 20.0,
             "low": 3.0,
             "high": 200.0

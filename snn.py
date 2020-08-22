@@ -591,7 +591,6 @@ class SNN:
                         #------------------------------------
                         # Lines:
                         indices = nodes_active + pop[0] - 1
-                        #print(indices)
                         self.plot_lines(ax, sender_indices=indices)
                     
 
@@ -617,10 +616,10 @@ def run():
 
     #----------------------------------------------------------------------
     # Setting up SNN instance
-    snn = SNN(n_excitatory=100, 
-              n_inhibitory=20, 
-              n_inputs=10, 
-              n_outputs=8,
+    snn = SNN(n_excitatory=15, 
+              n_inhibitory=5, 
+              n_inputs=6, 
+              n_outputs=2,
               )
 
     #----------------------------------------------------------------------
