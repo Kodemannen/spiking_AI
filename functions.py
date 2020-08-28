@@ -100,4 +100,3 @@ def spike_train_gen(sim_time):
         if t < sim_time:
             train.append(t)
     return train
-

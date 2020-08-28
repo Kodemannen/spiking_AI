@@ -22,10 +22,8 @@ falling = False
 ceiling = 70
 floor = y0
 
-delay_ms = 
+delay_ms = 10
 
-
-c
 
 
 x, y = x0, y0
@@ -71,3 +69,18 @@ while run:
     win.fill((0,0,0))
     pg.draw.rect(win, (153, 102, 255), (x, y, protagonist_width, protagonist_height))
     pg.display.update()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
