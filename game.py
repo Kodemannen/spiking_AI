@@ -15,16 +15,17 @@ class JumpGame:
         self.player_width = 20
         self.player_height = 35
 
-        self.jump_vel = 20
-        self.fall_vel = 20
-        self.jump_height = 70
+        self.jump_vel = 5
+        self.fall_vel = 5
+        self.jump_height = 0            # roof is at 0
+        self.floor = self.win_height - self.player_height
 
         self.player_color = (153, 102, 255)
 
         #--------------------------------
         # Initializing player state
         self.player_x = 50
-        self.player_y = self.win_height - self.player_height
+        self.player_y = self.floor
 
         self.jumping = False
         self.falling = False
@@ -32,7 +33,26 @@ class JumpGame:
  
 
     def update_player(self, keys):
-        pass
+        if not (self.jumping or self.falling):
+            if keys[pg.K_SPACE] == 1:
+                self.player_y -= self.jump_vel
+                self.jumping = True
+
+        if self.jumping:
+            self.player_y -= self.jump_vel
+            if self.player_y <= self.jump_height:
+                self.jumping = False
+                self.falling = True
+
+        if self.falling:
+            self.player_y += self.fall_vel
+            if self.player_y >= self.floor:
+                self.player_y = self.floor
+                self.falling = False
+
+        return 0
+
+
 
     def update_obstacles(self):
         pass 
@@ -59,12 +79,16 @@ class JumpGame:
     def render_obstacles(self):
         pass
 
+    def render_background(self):
+        pass
+
 
     def render(self):
         self.win.fill((0,0,0))   # clearing screen
 
         self.render_player()
         self.render_obstacles()
+        self.render_background()
 
         pg.display.update()
         return 0
