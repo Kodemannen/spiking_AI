@@ -5,40 +5,69 @@ class JumpGame:
     def __init__(self):
         pg.init()
 
-        self._running = True
-        self.win_size = self.win_width, self.win_height = 640, 200
-
+        self._running = False
+        self.win_size = self.win_width, self.win_height = 800, 150
+        self.win = pg.display.set_mode(self.win_size)
         self.delay_ms = 10
  
-        self.win = pg.display.set_mode(self.win_size)
-        self._running = True
-
         #--------------------------------
         # Player params:
         self.player_width = 20
         self.player_height = 35
 
-        self.player_x = 50
-        self.player_y = self.win_height - self.player_height
-
         self.jump_vel = 20
         self.fall_vel = 20
+        self.jump_height = 70
+
+        self.player_color = (153, 102, 255)
+
+        #--------------------------------
+        # Initializing player state
+        self.player_x = 50
+        self.player_y = self.win_height - self.player_height
 
         self.jumping = False
         self.falling = False
 
-        self.jump_height = 70
  
 
-    def player(self):
+    def update_player(self, keys):
         pass
 
-    def run_game_cycle(self):
+    def update_obstacles(self):
+        pass 
+
+    def update_background(self):
         pass
+
+    def run_game_cycle(self, keys):
+        self.update_player(keys)
+        self.update_obstacles()
+        self.update_background()
     
+        return 0
+
+    
+    def render_player(self):
+        pg.draw.rect(self.win, 
+                     self.player_color, 
+                     (self.player_x, self.player_y, self.player_width, self.player_height))
+    
+        return 0
+
+
+    def render_obstacles(self):
+        pass
+
 
     def render(self):
-        pass
+        self.win.fill((0,0,0))   # clearing screen
+
+        self.render_player()
+        self.render_obstacles()
+
+        pg.display.update()
+        return 0
 
 
     def delay(self):
@@ -55,16 +84,16 @@ class JumpGame:
 
  
     def play(self):
-        #if self.on_init() == False:
-        #    self._running = False
- 
+
+        self._running = True 
         while( self._running ):
+
             self.delay()
             
             keys = pg.key.get_pressed()
             events = pg.event.get()
 
-            self.run_game_cycle()
+            self.run_game_cycle(keys)
             self.render()
 
 
