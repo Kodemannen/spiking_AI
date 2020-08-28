@@ -1,7 +1,7 @@
 import pygame as pg
 from pygame.locals import *
  
-class App:
+class JumpGame:
     def __init__(self):
         pg.init()
 
@@ -33,17 +33,11 @@ class App:
     def player(self):
         pass
 
-
-    def on_event(self, event):
-        if event.type == pg.QUIT:
-            self._running = False
-
-
-    def on_loop(self):
+    def run_game_cycle(self):
         pass
     
 
-    def on_render(self):
+    def render(self):
         pass
 
 
@@ -68,14 +62,10 @@ class App:
             self.delay()
             
             keys = pg.key.get_pressed()
+            events = pg.event.get()
 
-            
-
-
-            for event in pg.event.get():
-                self.on_event(event)
-            self.on_loop()
-            self.on_render()
+            self.run_game_cycle()
+            self.render()
 
 
             #--------------exit-----------------
@@ -87,8 +77,8 @@ class App:
 
  
 if __name__ == "__main__" :
-    theApp = App()
-    theApp.play()
+    game = JumpGame()
+    game.play()
 
 
 
