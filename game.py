@@ -1,3 +1,4 @@
+import numpy as np
 import pygame as pg
 from pygame.locals import *
  
@@ -6,7 +7,7 @@ class JumpGame:
         pg.init()
 
         self._running = False
-        self.win_size = self.win_width, self.win_height = 800, 150
+        self.win_size = self.win_width, self.win_height = 800, 200
         self.win = pg.display.set_mode(self.win_size)
         self.delay_ms = 10
  
@@ -17,7 +18,9 @@ class JumpGame:
 
         self.jump_vel = 5
         self.fall_vel = 5
-        self.jump_height = 0            # roof is at 0
+        self.move_vel = 1
+        self.jump_height = 45
+        #self.jump_height = # roof is at 0
         self.floor = self.win_height - self.player_height
 
         self.player_color = (153, 102, 255)
@@ -31,6 +34,18 @@ class JumpGame:
         self.falling = False
 
  
+        #--------------------------------
+        # Obstacle:
+        self.obstacle_size = (7, 7)              # width, height 
+        self.obstacle_width, self.obstacle_height = self.obstacle_size
+        self.obstacle_color = (153, 255, 187)
+        self.obstacle_x = False
+        self.obstacle_y = self.win_height - self.obstacle_height
+        self.obstacle_vel = 5
+
+        self.obstacle_spawn_prob = 0.003
+        
+        
 
     def update_player(self, keys):
         if not (self.jumping or self.falling):
@@ -38,6 +53,8 @@ class JumpGame:
                 self.player_y -= self.jump_vel
                 self.jumping = True
 
+        #-----------------------------------------
+        # Jumping and gravity:
         if self.jumping:
             self.player_y -= self.jump_vel
             if self.player_y <= self.jump_height:
@@ -50,19 +67,48 @@ class JumpGame:
                 self.player_y = self.floor
                 self.falling = False
 
+        
+        #-----------------------------------------
+        # Horizontal movement:
+        if keys[pg.K_h]==1:
+            self.player_x -= self.move_vel
+        if keys[pg.K_l]==1:
+            self.player_x += self.move_vel
+
+
         return 0
 
 
 
-    def update_obstacles(self):
-        pass 
+    def update_obstacle(self):
+
+        # Spawn or not:
+        if self.obstacle_x == False: 
+            dice = np.random.random()
+            if dice <= self.obstacle_spawn_prob:
+                # Start the right:
+                self.obstacle_x = self.win_width
+            else:
+                pass
+
+        # If already spawned:
+        else:
+            self.obstacle_x -= self.obstacle_vel
+
+            # if exited screen:
+            if self.obstacle_x < 0:
+                self.obstacle_x = False
+
+        return 0
+
+
 
     def update_background(self):
         pass
 
     def run_game_cycle(self, keys):
         self.update_player(keys)
-        self.update_obstacles()
+        self.update_obstacle()
         self.update_background()
     
         return 0
@@ -71,27 +117,38 @@ class JumpGame:
     def render_player(self):
         pg.draw.rect(self.win, 
                      self.player_color, 
-                     (self.player_x, self.player_y, self.player_width, self.player_height))
-    
-        return 0
+                     (self.player_x, 
+                      self.player_y, 
+                      self.player_width, 
+                      self.player_height))
+        return
 
 
-    def render_obstacles(self):
-        pass
+
+    def render_obstacle(self):
+        if not self.obstacle_x == False:
+            pg.draw.rect(self.win, 
+                         self.obstacle_color, 
+                         (self.obstacle_x, 
+                          self.obstacle_y, 
+                          self.obstacle_width, 
+                          self.obstacle_height))
+        return
+
 
     def render_background(self):
-        pass
+        return
 
 
     def render(self):
         self.win.fill((0,0,0))   # clearing screen
 
         self.render_player()
-        self.render_obstacles()
+        self.render_obstacle()
         self.render_background()
 
         pg.display.update()
-        return 0
+        return
 
 
     def delay(self):
@@ -99,7 +156,7 @@ class JumpGame:
                 Induces a small delay between each timestep in the game
         '''
         pg.time.delay(self.delay_ms)
-        return 0
+        return
 
 
     def quit_game(self):
