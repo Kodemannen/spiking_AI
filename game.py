@@ -36,7 +36,7 @@ class JumpGame:
  
         #--------------------------------
         # Obstacle:
-        self.obstacle_size = (7, 7)              # width, height 
+        self.obstacle_size = (7, 30)              # width, height 
         self.obstacle_width, self.obstacle_height = self.obstacle_size
         self.obstacle_color = (153, 255, 187)
         self.obstacle_x = False
@@ -101,6 +101,27 @@ class JumpGame:
 
         return 0
 
+    def check_hit(self):
+        obstacle_center_x = self.obstacle_x + self.obstacle_width/2
+        player_center_x = self.player_x + self.player_width/2
+
+        obstacle_center_y = self.obstacle_y + self.obstacle_height/2
+        player_center_y = self.player_y + self.player_height/2
+
+        criterion1 = abs(player_center_x - obstacle_center_x) <= (self.obstacle_width/2 
+                                                                 + self.player_width/2)
+
+        criterion2 = abs(player_center_y - obstacle_center_y) <= (self.obstacle_height/2 
+                                                                 + self.player_height/2)
+
+        if criterion1 and criterion2:
+            
+            print('hit')
+            print('game over')
+
+
+    
+
 
 
     def update_background(self):
@@ -109,6 +130,7 @@ class JumpGame:
     def run_game_cycle(self, keys):
         self.update_player(keys)
         self.update_obstacle()
+        self.check_hit()
         self.update_background()
     
         return 0
