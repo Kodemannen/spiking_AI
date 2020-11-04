@@ -81,6 +81,9 @@ class JumpGame:
 
 
     def update_obstacle(self):
+        '''
+        Update the position of the obstacle
+        '''
 
         # Spawn or not:
         if self.obstacle_x == False: 
@@ -101,7 +104,15 @@ class JumpGame:
 
         return 0
 
+
+    def evaluate(self):
+
+        self.check_hit()
+
+
+
     def check_hit(self):
+
         obstacle_center_x = self.obstacle_x + self.obstacle_width/2
         player_center_x = self.player_x + self.player_width/2
 
@@ -120,17 +131,18 @@ class JumpGame:
             print('game over')
 
 
-    
-
-
 
     def update_background(self):
+        '''
+        Updating the positions of elements in the background
+        '''
         pass
+
+
 
     def run_game_cycle(self, keys):
         self.update_player(keys)
         self.update_obstacle()
-        self.check_hit()
         self.update_background()
     
         return 0
@@ -170,6 +182,7 @@ class JumpGame:
         self.render_background()
 
         pg.display.update()
+
         return
 
 
@@ -197,7 +210,18 @@ class JumpGame:
             events = pg.event.get()
 
             self.run_game_cycle(keys)
+            self.evaluate()
             self.render()
+
+            #------------------------------------------------
+            # Feed state to neural network
+            surface = pg.display.get_surface()
+            surface_array = pg.surfarray.array2d(surface)
+            print(surface_array.shape) 
+
+            exit('pikk')
+
+
 
 
             #--------------exit-----------------

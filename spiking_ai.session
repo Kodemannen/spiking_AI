@@ -15,7 +15,7 @@ badd +1 too.txt
 badd +3 todo.txt
 badd +1 dino_game.py
 badd +1 game.py
-badd +1 game_tutorial.py
+badd +31 game_tutorial.py
 badd +1 game_params.json
 badd +16 game_mal.py
 argglobal
@@ -36,9 +36,9 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 25 + 22) / 45)
+exe '1resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe '2resize ' . ((&lines * 25 + 22) / 45)
+exe '2resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
 argglobal
 if bufexists("snn.py") | buffer snn.py | else | edit snn.py | endif
@@ -51,7 +51,7 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 549 - ((3 * winheight(0) + 12) / 25)
+let s:l = 549 - ((4 * winheight(0) + 16) / 32)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -69,16 +69,16 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 96 - ((9 * winheight(0) + 12) / 25)
+let s:l = 96 - ((12 * winheight(0) + 16) / 32)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 96
 normal! 06|
 wincmd w
-exe '1resize ' . ((&lines * 25 + 22) / 45)
+exe '1resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe '2resize ' . ((&lines * 25 + 22) / 45)
+exe '2resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
 tabedit default.json
 set splitbelow splitright
@@ -93,9 +93,9 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 25 + 22) / 45)
+exe '1resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe '2resize ' . ((&lines * 25 + 22) / 45)
+exe '2resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
 argglobal
 if bufexists("default.json") | buffer default.json | else | edit default.json | endif
@@ -108,7 +108,7 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 172 - ((17 * winheight(0) + 12) / 25)
+let s:l = 172 - ((22 * winheight(0) + 16) / 32)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -126,23 +126,19 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 2 - ((0 * winheight(0) + 12) / 25)
+let s:l = 2 - ((0 * winheight(0) + 16) / 32)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 2
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 25 + 22) / 45)
+exe '1resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe '2resize ' . ((&lines * 25 + 22) / 45)
+exe '2resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
 tabedit game.py
 set splitbelow splitright
-wincmd _ | wincmd |
-vsplit
-1wincmd h
-wincmd w
 set nosplitbelow
 set nosplitright
 wincmd t
@@ -150,8 +146,6 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
 argglobal
 if bufexists("game.py") | buffer game.py | else | edit game.py | endif
 setlocal fdm=manual
@@ -163,34 +157,12 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 32 - ((31 * winheight(0) + 21) / 42)
+let s:l = 32 - ((31 * winheight(0) + 18) / 37)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 32
-normal! 019|
-wincmd w
-argglobal
-if bufexists("game_tutorial.py") | buffer game_tutorial.py | else | edit game_tutorial.py | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 45 - ((0 * winheight(0) + 21) / 42)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-45
 normal! 0
-wincmd w
-2wincmd w
-exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
 tabnext 3
 set stal=1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
