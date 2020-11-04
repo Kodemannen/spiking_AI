@@ -199,42 +199,39 @@ class JumpGame:
         exit('exited game')
 
  
-    def play(self):
+    def play_one_step(self):
 
-        self._running = True 
-        while( self._running ):
+        self.delay()
+        
+        keys = pg.key.get_pressed()
+        events = pg.event.get()
 
-            self.delay()
-            
-            keys = pg.key.get_pressed()
-            events = pg.event.get()
+        self.run_game_cycle(keys)
+        self.evaluate()
+        self.render()
 
-            self.run_game_cycle(keys)
-            self.evaluate()
-            self.render()
-
-            #------------------------------------------------
-            # Feed state to neural network
-            surface = pg.display.get_surface()
-            surface_array = pg.surfarray.array2d(surface)
-            print(surface_array.shape) 
-
-            exit('pikk')
-
-
-
-
+        if keys[pg.K_q] == 1:
             #--------------exit-----------------
-            if keys[pg.K_q] == 1:
-                self.quit_game()
+            self.quit_game()
             #-----------------------------------
 
-        return 0
+        return 
+
+
+    def get_pixels(self):
+        #------------------------------------------------
+        # Feed state to neural network
+        surface = pg.display.get_surface()
+        surface_array = pg.surfarray.array2d(surface)
+
+        return surface_array
+
 
  
 if __name__ == "__main__" :
-    game = JumpGame()
-    game.play()
+    #game = JumpGame()
+    #game.play()
+    pass
 
 
 

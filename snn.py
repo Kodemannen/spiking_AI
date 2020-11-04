@@ -1,3 +1,6 @@
+import nest
+nest.set_verbosity("M_WARNING")
+
 import multiprocessing as mp
 from joblib import delayed, Parallel
 import sys
@@ -5,8 +8,6 @@ import sys
 import numpy as np
 #np.random.seed(13)
 
-import nest
-nest.set_verbosity("M_WARNING")
 
 import matplotlib.pyplot as plt
 from matplotlib import animation
