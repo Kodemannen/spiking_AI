@@ -7,23 +7,15 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +1 functions.py
-badd +1 snn.py
-badd +1 animate_image.py
-badd +1 default.json
-badd +1 too.txt
-badd +3 todo.txt
-badd +1 dino_game.py
-badd +1 game.py
-badd +31 game_tutorial.py
-badd +1 game_params.json
-badd +16 game_mal.py
+badd +39 main.py
+badd +0 game/game.py
+badd +1 snn/snn.py
+badd +0 snn/functions.py
 argglobal
 %argdel
-$argadd functions.py
-$argadd snn.py
+$argadd main.py
 set stal=2
-edit snn.py
+edit main.py
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
@@ -36,12 +28,9 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe '2resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
 argglobal
-if bufexists("snn.py") | buffer snn.py | else | edit snn.py | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -51,36 +40,35 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 549 - ((4 * winheight(0) + 16) / 32)
+let s:l = 19 - ((18 * winheight(0) + 18) / 37)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-549
-normal! 011|
-wincmd w
-argglobal
-if bufexists("functions.py") | buffer functions.py | else | edit functions.py | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 96 - ((12 * winheight(0) + 16) / 32)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-96
+19
 normal! 06|
 wincmd w
-exe '1resize ' . ((&lines * 32 + 20) / 40)
+argglobal
+if bufexists("game/game.py") | buffer game/game.py | else | edit game/game.py | endif
+setlocal fdm=manual
+setlocal fde=0
+setlocal fmr={{{,}}}
+setlocal fdi=#
+setlocal fdl=0
+setlocal fml=1
+setlocal fdn=20
+setlocal fen
+silent! normal! zE
+let s:l = 94 - ((32 * winheight(0) + 18) / 37)
+if s:l < 1 | let s:l = 1 | endif
+exe s:l
+normal! zt
+94
+normal! 014|
+wincmd w
+2wincmd w
 exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe '2resize ' . ((&lines * 32 + 20) / 40)
 exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
-tabedit default.json
+tabedit snn/snn.py
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
@@ -93,12 +81,9 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 32 + 20) / 40)
-exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe '2resize ' . ((&lines * 32 + 20) / 40)
-exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
+exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
+exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
 argglobal
-if bufexists("default.json") | buffer default.json | else | edit default.json | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -108,15 +93,15 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 172 - ((22 * winheight(0) + 16) / 32)
+let s:l = 80 - ((4 * winheight(0) + 18) / 37)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-172
+80
 normal! 0
 wincmd w
 argglobal
-if bufexists("dino_game.py") | buffer dino_game.py | else | edit dino_game.py | endif
+if bufexists("snn/functions.py") | buffer snn/functions.py | else | edit snn/functions.py | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -126,44 +111,16 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 2 - ((0 * winheight(0) + 16) / 32)
+let s:l = 2 - ((1 * winheight(0) + 18) / 37)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 2
 normal! 0
 wincmd w
-exe '1resize ' . ((&lines * 32 + 20) / 40)
-exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe '2resize ' . ((&lines * 32 + 20) / 40)
-exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
-tabedit game.py
-set splitbelow splitright
-set nosplitbelow
-set nosplitright
-wincmd t
-set winminheight=0
-set winheight=1
-set winminwidth=0
-set winwidth=1
-argglobal
-if bufexists("game.py") | buffer game.py | else | edit game.py | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 32 - ((31 * winheight(0) + 18) / 37)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-32
-normal! 0
-tabnext 3
+exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
+exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+tabnext 1
 set stal=1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

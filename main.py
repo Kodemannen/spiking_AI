@@ -4,8 +4,8 @@ import time
 import sys
 import os
 
-from game import JumpGame
-from snn import SNN
+from game.game import JumpGame
+from snn.snn import SNN
 
 
 #----------------------------------------------------------------------------------------------
@@ -33,9 +33,13 @@ def main():
         game.play_one_step()
         pixels = game.get_pixels()  # input for the snn
 
-
         # use just a cutout from the pixels as input, to simplify
         input_ = pixels
+
+        fig, ax = plt.subplots()
+
+        ax.imshow(pixels.T)
+        plt.savefig('output/game_testfig.png')
 
         # Create spikes out of the pixels?
         # a non zero pixel is a spike
@@ -43,6 +47,7 @@ def main():
         #snn.
 
 
+        exit('jau')
 
 
 

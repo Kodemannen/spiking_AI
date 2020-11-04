@@ -7,7 +7,7 @@ class JumpGame:
         pg.init()
 
         self._running = False
-        self.win_size = self.win_width, self.win_height = 800, 200
+        self.win_size = self.win_width, self.win_height = 800, 100
         self.win = pg.display.set_mode(self.win_size)
         self.delay_ms = 10
  

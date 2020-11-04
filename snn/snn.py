@@ -17,7 +17,7 @@ sns.set()
 
 import json
 
-from functions import *
+from .functions import *
 
 
 def __get_spike_times_by_id(idx, times, senders, scale):
@@ -90,7 +90,7 @@ class SNN:
         
         #-----------------------------------------------
         # Loading parameters:
-        with open('default.json', 'r') as f:
+        with open('snn/default.json', 'r') as f:
           default_cfg = json.load(f)
 
         self.snn_conf = default_cfg.copy()
