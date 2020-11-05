@@ -36,10 +36,10 @@ def main():
         # use just a cutout from the pixels as input, to simplify
         input_ = pixels
 
-        fig, ax = plt.subplots()
-
-        ax.imshow(pixels.T)
-        plt.savefig('output/game_testfig.png')
+        #fig, ax = plt.subplots()
+        #ax.imshow(pixels.T)
+        #plt.savefig('output/game_testfig.png')
+        #exit('jau')
 
         # Create spikes out of the pixels?
         # a non zero pixel is a spike
@@ -47,7 +47,6 @@ def main():
         #snn.
 
 
-        exit('jau')
 
 
 

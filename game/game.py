@@ -1,6 +1,15 @@
 import numpy as np
 import pygame as pg
 from pygame.locals import *
+
+class game_object:
+
+    def __init__(self, position):
+        pass
+
+
+
+
  
 class JumpGame:
     def __init__(self):
@@ -11,27 +20,36 @@ class JumpGame:
         self.win = pg.display.set_mode(self.win_size)
         self.delay_ms = 10
  
-        #--------------------------------
-        # Player params:
-        self.player_width = 20
-        self.player_height = 35
 
         self.jump_vel = 5
         self.fall_vel = 5
         self.move_vel = 1
         self.jump_height = 45
         #self.jump_height = # roof is at 0
-        self.floor = self.win_height - self.player_height
+        #self.floor = self.win_height - self.player_height
 
         self.player_color = (153, 102, 255)
 
         #--------------------------------
-        # Initializing player state
-        self.player_x = 50
-        self.player_y = self.floor
+        # Player params:
+        self.player_width = 30
+        self.player_height = 20
 
-        self.jumping = False
-        self.falling = False
+
+        # vertical space between player/car and lane border
+        space_vertical = (self.win_height/2 - self.player_height ) / 2 
+
+
+        # Initializing player state
+        self.player_pos_x = 35
+        #self.player_pos_y = 65
+        self.player_pos_y = self.win_height / 2 + space_vertical
+
+        self.player_pos = (self.player_pos_x, self.player_pos_y)
+
+
+        #self.jumping = False
+        #self.falling = False
 
  
         #--------------------------------
@@ -48,32 +66,13 @@ class JumpGame:
         
 
     def update_player(self, keys):
-        if not (self.jumping or self.falling):
-            if keys[pg.K_SPACE] == 1:
-                self.player_y -= self.jump_vel
-                self.jumping = True
-
-        #-----------------------------------------
-        # Jumping and gravity:
-        if self.jumping:
-            self.player_y -= self.jump_vel
-            if self.player_y <= self.jump_height:
-                self.jumping = False
-                self.falling = True
-
-        if self.falling:
-            self.player_y += self.fall_vel
-            if self.player_y >= self.floor:
-                self.player_y = self.floor
-                self.falling = False
-
         
         #-----------------------------------------
         # Horizontal movement:
         if keys[pg.K_h]==1:
-            self.player_x -= self.move_vel
+            self.player_pos_x -= self.move_vel
         if keys[pg.K_l]==1:
-            self.player_x += self.move_vel
+            self.player_pos_x += self.move_vel
 
 
         return 0
@@ -114,10 +113,10 @@ class JumpGame:
     def check_hit(self):
 
         obstacle_center_x = self.obstacle_x + self.obstacle_width/2
-        player_center_x = self.player_x + self.player_width/2
+        player_center_x = self.player_pos_x + self.player_width/2
 
         obstacle_center_y = self.obstacle_y + self.obstacle_height/2
-        player_center_y = self.player_y + self.player_height/2
+        player_center_y = self.player_pos_y + self.player_height/2
 
         criterion1 = abs(player_center_x - obstacle_center_x) <= (self.obstacle_width/2 
                                                                  + self.player_width/2)
@@ -151,8 +150,8 @@ class JumpGame:
     def render_player(self):
         pg.draw.rect(self.win, 
                      self.player_color, 
-                     (self.player_x, 
-                      self.player_y, 
+                     (self.player_pos_x, 
+                      self.player_pos_y, 
                       self.player_width, 
                       self.player_height))
         return
