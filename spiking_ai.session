@@ -7,10 +7,11 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +39 main.py
-badd +0 game/game.py
+badd +1 main.py
+badd +19 game/game.py
 badd +1 snn/snn.py
-badd +0 snn/functions.py
+badd +1 snn/functions.py
+badd +3 workspace.sh
 argglobal
 %argdel
 $argadd main.py
@@ -40,12 +41,12 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 19 - ((18 * winheight(0) + 18) / 37)
+let s:l = 35 - ((19 * winheight(0) + 18) / 37)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-19
-normal! 06|
+35
+normal! 0
 wincmd w
 argglobal
 if bufexists("game/game.py") | buffer game/game.py | else | edit game/game.py | endif
@@ -58,14 +59,13 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 94 - ((32 * winheight(0) + 18) / 37)
+let s:l = 215 - ((31 * winheight(0) + 18) / 37)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-94
-normal! 014|
+215
+normal! 0
 wincmd w
-2wincmd w
 exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
 exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
 tabedit snn/snn.py

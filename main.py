@@ -32,14 +32,19 @@ def main():
 
         game.play_one_step()
         pixels = game.get_pixels()  # input for the snn
+        print(pixels.shape) 
 
         # use just a cutout from the pixels as input, to simplify
         input_ = pixels
 
-        #fig, ax = plt.subplots()
-        #ax.imshow(pixels.T)
-        #plt.savefig('output/game_testfig.png')
-        #exit('jau')
+
+        
+
+        fig, ax = plt.subplots()
+        ax.imshow(pixels.T)
+
+        plt.savefig('output/game_testfig.png')
+        exit('jau')
 
         # Create spikes out of the pixels?
         # a non zero pixel is a spike

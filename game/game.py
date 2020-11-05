@@ -16,7 +16,7 @@ class JumpGame:
         pg.init()
 
         self._running = False
-        self.win_size = self.win_width, self.win_height = 800, 100
+        self.win_size = self.win_width, self.win_height = 150, 60
         self.win = pg.display.set_mode(self.win_size)
         self.delay_ms = 10
  
@@ -32,8 +32,8 @@ class JumpGame:
 
         #--------------------------------
         # Player params:
-        self.player_width = 30
-        self.player_height = 20
+        self.player_width = 20
+        self.player_height = 10
 
 
         # vertical space between player/car and lane border
@@ -41,7 +41,7 @@ class JumpGame:
 
 
         # Initializing player state
-        self.player_pos_x = 35
+        self.player_pos_x = 20
         #self.player_pos_y = 65
         self.player_pos_y = self.win_height / 2 + space_vertical
 
