@@ -64,13 +64,15 @@ class SNN:
                  n_inputs=10, 
                  n_outputs=10, 
                  use_noise=False,
-                 dt=0.1
-                 ):
+                 dt=0.1,
+                 input_node_type='spike_generator'):
         """
         Main pop : consists of excitatory and inhibitory synapses
         Input synapses: only excitatory synapses
         Output pop : no synapses 
         """
+
+        self.input_node_type = input_node_type
 
         self.n_excitatory = n_excitatory
         self.n_inhibitory = n_inhibitory
@@ -111,12 +113,22 @@ class SNN:
                                         n_inhibitory, 
                                         i_lif_params)
 
-        self.input_nodes = nest.Create('spike_generator', 
-                                        n_inputs)
+
+        #-----------------------------------------------
+        # Choosing format for inputs:
+        if input_node_type=='spike_generator':  
+            self.input_nodes = nest.Create('spike_generator', 
+                                            n_inputs)
+
+        elif input_node_type=='poisson_generator':
+            self.input_nodes = nest.Create('poisson_generator', 
+                                            n_inputs)
+
 
         self.output_nodes = nest.Create('iaf_psc_alpha', 
                                         n_outputs, 
                                         e_lif_params)
+
 
         #-----------------------------------------------
         # Useful groupings:
@@ -146,7 +158,9 @@ class SNN:
         # Creating spike detectors:
         self.e_spike_detector = nest.Create('spike_detector')
         self.i_spike_detector = nest.Create('spike_detector')
+
         self.input_spike_detector = nest.Create('spike_detector')
+
         self.output_spike_detector = nest.Create('spike_detector')
 
         #-----------------------------------------------
@@ -201,11 +215,19 @@ class SNN:
                      rule_dict_output, 
                      syn_spec_ee)
 
+        
+        # parrot neuron for input spike collection
+        input_parrots = nest.Create('parrot_neuron', 
+                                    n_inputs)
+
         #-----------------------------------------------
         # Connecting to spike detectors:
         nest.Connect(self.e_population, self.e_spike_detector)
         nest.Connect(self.i_population, self.i_spike_detector)
-        nest.Connect(self.input_nodes, self.input_spike_detector)
+
+        nest.Connect(self.input_nodes, input_parrots)
+        nest.Connect(input_parrots, self.input_spike_detector)
+
         nest.Connect(self.output_nodes, self.output_spike_detector)
 
         return None
@@ -460,6 +482,7 @@ class SNN:
                output_spike_times, (rate_e, rate_i, rate_output))
 
 
+
     def simulate(self, input_spikes, sim_time, T=0):
 
         self.sim_time = sim_time
@@ -477,6 +500,10 @@ class SNN:
                               input_spike_times, 
                               output_spike_times,
                               fps=30): 
+        '''
+        Generates animation/plot frames with the set fps corresponding to spike times
+        '''
+
         dt_anim = 1/fps * 1000          # in ms
         # should use the // operator to make a grid thing
         timesteps_anim = np.arange(0, self.sim_time, step=dt_anim)
@@ -595,9 +622,6 @@ class SNN:
                         self.plot_lines(ax, sender_indices=indices)
                     
 
-
-
-
             ax.set_xlim([-1.9, 1.9])
             ax.set_ylim([-1., 2.5])
 
@@ -611,6 +635,16 @@ class SNN:
         ani.save("spiking_anim.mp4", writer=writer, dpi=150)
 
 
+
+
+    def plot_one_iteration(self,
+                           e_spike_times,      # shape=(n_excitatory, spike_times) 
+                           i_spike_times,      
+                           input_spike_times, 
+                           output_spike_times,
+                            ):
+
+        pass
 
 
 def run():
