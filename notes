@@ -1,0 +1,14 @@
+Plan:
+	- Want to illustrate using very few pixels
+		- Will make a car game with two lanes 
+		- can go up or down, must dodge obstacles ('pixels') that come one at a time in a 
+		  random lane
+
+		- Since pygame has a minimum screen size, we will emulate pixels
+		- Create grid structure in game 
+
+	- The input neurons in the SNN sees one square each	
+		- One spike when the obstacle is in the square
+	
+	- Need to find a parameter setting that has slow activity
+

@@ -6,7 +6,7 @@ import os
 import seaborn as sns
 sns.set()
 
-from game.game import JumpGame
+from game.game import CarGame
 from snn.snn import SNN
 
 
@@ -16,11 +16,60 @@ from snn.snn import SNN
 
 
 
+
+def split_pixels(pixels, nx=100, ny=50):
+    '''
+    Divide the pixels into compartments that are used as input to single neurons
+    '''
+
+    img_length = pixels.shape[1]   # length is n columns
+    img_height = pixels.shape[0]   # height is n rows
+
+    splitted = []
+
+    i = 0
+    j = 0
+    done = False
+    while not done:
+
+        cutout = pixels[j:j+ny, i:i+nx] 
+        splitted.append(cutout) 
+
+        #plt.imshow(pixels)
+        #plt.pause(0.05)
+        #pixels[j:j+ny, i:i+nx] = 1
+
+        # Move to next cutout:
+        i += nx
+        if i >= img_length - 1:
+            i = 0
+            j += ny
+
+        # Check if done:
+        if j >= img_height:
+            done = True
+
+    #plt.show()
+        
+    return np.array(splitted)
+
+
+
+def get_input_vector(pixels, nx, ny):
+
+    splitted = split_pixels(pixels, nx=nx, ny=ny)
+    input_vector = np.sum(splitted, axis=(1,2))
+
+    return input_vector
+
+
+
+
 def main():
 
     #----------------------
     # Get game:
-    game = JumpGame()
+    game = CarGame()
 
     #----------------------
     # Get spiking neural network:
@@ -70,59 +119,8 @@ def main():
         #snn.simulate()
 
 
-        plt.imshow(pixels)
-        plt.savefig('output/testfig.png')
-
-
-        exit('o')
-
-
-
-
-def split_pixels(pixels, nx=100, ny=50):
-    '''
-    Divide the pixels into compartments that are used as input to single neurons
-    '''
-
-    img_length = pixels.shape[1]   # length is n columns
-    img_height = pixels.shape[0]   # height is n rows
-
-    splitted = []
-
-    i = 0
-    j = 0
-    done = False
-    while not done:
-
-        cutout = pixels[j:j+ny, i:i+nx] 
-        splitted.append(cutout) 
-
         #plt.imshow(pixels)
-        #plt.pause(0.05)
-        #pixels[j:j+ny, i:i+nx] = 1
-
-        # Move to next cutout:
-        i += nx
-        if i >= img_length - 1:
-            i = 0
-            j += ny
-
-        # Check if done:
-        if j >= img_height:
-            done = True
-
-    #plt.show()
-        
-    return np.array(splitted)
-
-
-
-def get_input_vector(pixels, nx, ny):
-
-    splitted = split_pixels(pixels, nx=nx, ny=ny)
-    input_vector = np.sum(splitted, axis=(1,2))
-
-    return input_vector
+        #plt.savefig('output/testfig.png')
 
 
 
