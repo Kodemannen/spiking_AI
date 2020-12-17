@@ -63,9 +63,66 @@ def get_input_vector(pixels, nx, ny):
     return input_vector
 
 
+def create_line_box():
+    '''
+    Creates a list cotaining the lines of a grid
+        - Could maybe get them from the number of lanes instead of lines
+            - n_lanes and n_neurons maybe
+
+    '''
+
+    n_vertical = 8              # number of vertical lines (first and last line might not show)
+    n_horizontal = 3            # number of horizontal lines
+
+    stepx = 100 
+    stepy = 50
+
+    line_box = []
+
+    # Generating vertical lines:
+    for i in range(n_vertical):
+
+        x = stepx*i
+
+        y1 = 0
+        y2 = 100
+
+        line = [(x,y1), (x, y2)]
+
+        line_box.append(line)
+
+    # Generating horizontal lines:
+    for i in range(n_horizontal):
+
+        y = stepy*i
+
+        x1 = 0
+        x2 = 800
+
+        line = [(x1,y), (x2, y)]
+
+        line_box.append(line)
+
+    return line_box
+
 
 
 def main():
+    ''' 
+    Interface for controlling two main objects:
+
+        - game  
+            -- Found in game/game.py
+            -- Contains the game being played 
+
+        - snn
+            -- Instance for a spiking neural network simulation
+            -- Found in snn/snn.py
+
+    Next:
+        - Draw grid
+        - Feed pixels to snn
+    '''
 
     #----------------------
     # Get game:
@@ -86,11 +143,24 @@ def main():
 
     fps = 30
 
+    # starting with a single line
+    game.line = [(0,0), (10, 10)]
+
+    lines_box = create_line_box()
+    game.grid_lines = lines_box
+
+    
+
     #----------------------
     # Start playing
-    playing = True
+    #----------------------
 
+    playing = True
     while playing:
+
+        #----------------------------------------------------------
+        # One iteration of this loop is one timestep in the game: 
+        #----------------------------------------------------------
 
         game.play_one_step()
         pixels = game.get_pixels()  # input for the snn
@@ -118,9 +188,13 @@ def main():
 
         #snn.simulate()
 
+        fig, ax = plt.subplots()
 
-        #plt.imshow(pixels)
-        #plt.savefig('output/testfig.png')
+        ax.imshow(pixels)
+        #ax.axis('off')
+        ax.set_xticks(np.arange(0, 800,step=200))
+        plt.savefig('output/testfig.png')
+        exit('asd')
 
 
 

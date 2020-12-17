@@ -170,7 +170,41 @@ class CarGame:
 
 
     def render_background(self):
+        '''
+        Draws background 
+        '''
+        self.draw_grid()
         return
+
+
+    def draw_grid(self):
+        '''
+        - Draws a background grid that indicates the pixels 
+            - Using pg.draw.lines()
+
+        - Assumes that self.grid exists
+        '''
+
+        line_color = (153, 255, 187)    # RGB
+        line_width = 5                  # 1 is default
+
+        n_tot_lines = len(self.grid_lines)
+
+        for i in range(n_tot_lines):
+
+            print('wasd')
+            line = self.grid_lines[i]
+
+            start_line = line[0]       # (x, y) coordinate
+            end_line   = line[1]       # (x, y) coordinate
+
+            pg.draw.line(self.win, 
+                         line_color, 
+                         start_line, 
+                         end_line, 
+                         line_width)
+        
+        pass
 
 
     def render(self):
