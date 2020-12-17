@@ -69,6 +69,7 @@ def create_line_box():
         - Could maybe get them from the number of lanes instead of lines
             - n_lanes and n_neurons maybe
 
+        - Must have an automatic correspondance to the number of input neurons
     '''
 
     n_vertical = 8              # number of vertical lines (first and last line might not show)
@@ -121,6 +122,10 @@ def main():
 
     Next:
         - Draw grid
+            - Must have a correspondance between grid lines and the input neurons
+            - Could for example get the number of lines from the numer of lanes and input neurons
+                - i.e. input neurons per lane
+
         - Feed pixels to snn
     '''
 
@@ -189,7 +194,6 @@ def main():
         #snn.simulate()
 
         fig, ax = plt.subplots()
-
         ax.imshow(pixels)
         #ax.axis('off')
         ax.set_xticks(np.arange(0, 800,step=200))
