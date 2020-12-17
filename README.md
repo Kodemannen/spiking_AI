@@ -1,1 +1,1 @@
-# spiking_AI
+Interface between pyNest and pyGame
