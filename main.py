@@ -9,6 +9,7 @@ sns.set()
 from game.game import CarGame
 from snn.snn import SNN
 
+exit('asd')
 
 #----------------------------------------------------------------------------------------------
 # Here I will control the snn instance and the game instance and feed information between them
@@ -72,8 +73,8 @@ def create_line_box():
         - Must have an automatic correspondance to the number of input neurons
     '''
 
-    n_vertical = 8              # number of vertical lines (first and last line might not show)
-    n_horizontal = 3            # number of horizontal lines
+    n_vertical = 2              # number of vertical lines (first and last line might not show)
+    n_horizontal = 2            # number of horizontal lines
 
     stepx = 100 
     stepy = 50
@@ -131,6 +132,7 @@ def main():
 
     #----------------------
     # Get game:
+    exit('hvafan')
     game = CarGame()
 
     #----------------------
@@ -197,10 +199,11 @@ def main():
         ax.imshow(pixels)
         #ax.axis('off')
         ax.set_xticks(np.arange(0, 800,step=200))
-        plt.savefig('output/testfig.png')
+        plt.savefig('testfig.png')
         exit('asd')
 
 
 
 if __name__=='__main__':
+    exit('oi')
     main()

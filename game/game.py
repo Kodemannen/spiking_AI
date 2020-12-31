@@ -16,7 +16,7 @@ class CarGame:
         pg.init()
 
         self._running = False
-        self.win_size = self.win_width, self.win_height = 800, 100
+        self.win_size = self.win_width, self.win_height = 100, 100
         self.win = pg.display.set_mode(self.win_size)
         self.delay_ms = 10
  
@@ -192,7 +192,6 @@ class CarGame:
 
         for i in range(n_tot_lines):
 
-            print('wasd')
             line = self.grid_lines[i]
 
             start_line = line[0]       # (x, y) coordinate
