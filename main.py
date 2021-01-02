@@ -6,6 +6,8 @@ import os
 import seaborn as sns
 sns.set()
 
+from matplotlib import collections as mc
+
 from game.game import CarGame
 from snn.snn import SNN
 
@@ -64,12 +66,107 @@ def get_input_vector(pixels, nx, ny):
 
 
 
+def create_line_box():
+    '''
+    Creates a list cotaining the lines of a grid
+        - Could maybe get them from the number of lanes instead of lines
+            - n_lanes and n_neurons maybe
+        - Must have an automatic correspondance to the number of input neurons
+    '''
+
+    n_vertical = 8              # number of vertical lines (first and last line might not show)
+    n_horizontal = 3            # number of horizontal lines
+
+    stepx = 100 
+    stepy = 50
+
+    line_box = []
+
+    # Generating vertical lines:
+    for i in range(n_vertical):
+
+        x = stepx*i
+
+        y1 = 0
+        y2 = 100
+
+        line = [(x,y1), (x, y2)]
+
+        line_box.append(line)
+
+    # Generating horizontal lines:
+    for i in range(n_horizontal):
+
+        y = stepy*i
+
+        x1 = 0
+        x2 = 800
+
+        line = [(x1,y), (x2, y)]
+
+        line_box.append(line)
+
+    line_box = np.array(line_box)
+
+    return line_box
+
+
+
+def plot_grid(ax, line_box):
+
+    lc = mc.LineCollection(line_box, linewidths=10, color='black') # choose color here
+    ax.add_collection(lc) 
+
+    return
+
+
+def draw_grid(self):
+    '''
+    - Draws a background grid that indicates the pixels 
+        - Using pg.draw.lines()
+    - Assumes that self.grid exists
+    '''
+
+    line_color = (153, 255, 187)    # RGB
+    line_width = 5                  # 1 is default
+
+    n_tot_lines = len(self.grid_lines)
+
+    for i in range(n_tot_lines):
+
+        print('wasd')
+        line = self.grid_lines[i]
+
+        start_line = line[0]       # (x, y) coordinate
+        end_line   = line[1]       # (x, y) coordinate
+
+        pg.draw.line(self.win, 
+                     line_color, 
+                     start_line, 
+                     end_line, 
+                     line_width)
+
+    pass
+
 
 def main():
 
     #----------------------
     # Get game:
     game = CarGame()
+
+    line_box = create_line_box()
+    line_box = np.array(line_box)
+
+    print(line_box) 
+    fig, ax = plt.subplots()
+
+    plot_grid(ax, line_box)
+    plt.savefig('testfig.png')
+
+    
+
+    exit('jallu')
 
     #----------------------
     # Get spiking neural network:
