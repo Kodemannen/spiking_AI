@@ -66,7 +66,7 @@ def get_input_vector(pixels, nx, ny):
 
 
 
-def create_grid_line_box(n_lanes, n_neurons_per_lane):
+def create_grid_line_box(n_lanes, n_neurons_per_lane, win_size):
 
     '''
     Creates a list containing the lines of a grid
@@ -83,21 +83,21 @@ def create_grid_line_box(n_lanes, n_neurons_per_lane):
     n_vertical_lines   = n_neurons_per_lane + 1
     n_horizontal_lines = n_lanes + 1
 
-    spacex = 100                            # horizontal cell space 
-    spacey = 50                             # vertical cell space
+    spacex = win_size[0]/n_neurons_per_lane             # horizontal cell space 
+    spacey = win_size[1]/n_lanes                        # vertical cell space
 
-    startx = 0                              # left vertical edge
-    starty = 0                              # top horizontal edge
+    startx = 0                                          # left vertical edge
+    starty = 0                                          # top horizontal edge
 
-    endx = spacex*n_neurons_per_lane        # right vertical edge
-    endy = spacex*n_lanes                   # bottom horizontal edge 
+    endx = startx + spacex*n_neurons_per_lane           # right vertical edge
+    endy = starty + spacey*n_lanes                      # bottom horizontal edge 
 
     line_box = []
 
     # Generating vertical lines:
     for i in range(n_vertical_lines):
 
-        x = spacex*i
+        x = spacex*i + startx
 
         line = [(x, starty), (x, endy)]
         line_box.append(line)
@@ -105,7 +105,7 @@ def create_grid_line_box(n_lanes, n_neurons_per_lane):
     # Generating horizontal lines:
     for i in range(n_horizontal_lines):
 
-        y = spacey*i
+        y = spacey*i + starty
 
         line = [(startx, y), (endx, y)]
         line_box.append(line)
@@ -119,9 +119,18 @@ def plot_grid(ax, line_box):
     lc = mc.LineCollection(line_box, linewidths=1, color='black') # choose color here
     ax.add_collection(lc) 
 
-    ax.set_xlim([-10, 810]) 
-    ax.set_ylim([-10, 510]) 
+    # Adjusting 'zoom level' to grid:
+    xs = line_box[:,0,0]
+    ys = line_box[:,1,1]
+
+    ax.set_xlim(xs.min(), xs.max())
+    ax.set_ylim(ys.min(), ys.max())
+
+    #ax.set_xlim([-10, 1000])
+    #ax.set_ylim([-10, 350])
+
     return
+
 
 
 
@@ -130,21 +139,24 @@ def main():
 
     #----------------------
     # Hyper parameters:
-    n_lanes = 4
-    n_neurons_per_lane = 4
+    n_lanes = 2
+    n_neurons_per_lane = 5
 
 
     #----------------------
     # Get game:
-    game = CarGame()
+    win_size = 800, 100                         # units of pixels
 
-    line_box = create_grid_line_box(n_lanes, n_neurons_per_lane)
+    game = CarGame(win_size)
+
+    line_box = create_grid_line_box(n_lanes, n_neurons_per_lane, win_size)
         
-    fig, ax = plt.subplots()
+    dpi = 150
+    fig, ax = plt.subplots(figsize=np.array(win_size)/dpi)
     plot_grid(ax, line_box)
 
+    plt.axis('off')
     plt.savefig('testfig.png')
-
     
 
     exit('jallu')

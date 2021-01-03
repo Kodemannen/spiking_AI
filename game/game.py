@@ -12,11 +12,13 @@ class game_object:
 
  
 class CarGame:
-    def __init__(self):
+    def __init__(self, win_size):
         pg.init()
 
         self._running = False
-        self.win_size = self.win_width, self.win_height = 800, 100
+        #self.win_size = self.win_width, self.win_height = 800, 100
+        self.win_size = self.win_width, self.win_height = win_size
+
         self.win = pg.display.set_mode(self.win_size)
         self.delay_ms = 10
  
