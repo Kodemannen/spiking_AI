@@ -66,49 +66,51 @@ def get_input_vector(pixels, nx, ny):
 
 
 
-def create_line_box():
+def create_grid_line_box(n_lanes, n_neurons_per_lane):
+
     '''
-    Creates a list cotaining the lines of a grid
-        - Could maybe get them from the number of lanes instead of lines
-            - n_lanes and n_neurons maybe
-        - Must have an automatic correspondance to the number of input neurons
+    Creates a list containing the lines of a grid
+
+    -----------------------------------------------------------------
+    Parameter               : Type          | Description 
+    -----------------------------------------------------------------
+
+        n_lanes             : integer       | number of car lanes
+        n_neurons_per_lane  : integer       | neurons per car lane
+
     '''
 
-    n_vertical = 9              # number of vertical lines (first and last line might not show)
-    n_horizontal = 3            # number of horizontal lines
+    n_vertical_lines   = n_neurons_per_lane + 1
+    n_horizontal_lines = n_lanes + 1
 
-    stepx = 100 
-    stepy = 50
+    spacex = 100                            # horizontal cell space 
+    spacey = 50                             # vertical cell space
+
+    startx = 0                              # left vertical edge
+    starty = 0                              # top horizontal edge
+
+    endx = spacex*n_neurons_per_lane        # right vertical edge
+    endy = spacex*n_lanes                   # bottom horizontal edge 
 
     line_box = []
 
     # Generating vertical lines:
-    for i in range(n_vertical):
+    for i in range(n_vertical_lines):
 
-        x = stepx*i
+        x = spacex*i
 
-        y1 = 0
-        y2 = 100
-
-        line = [(x,y1), (x, y2)]
-
+        line = [(x, starty), (x, endy)]
         line_box.append(line)
 
     # Generating horizontal lines:
-    for i in range(n_horizontal):
+    for i in range(n_horizontal_lines):
 
-        y = stepy*i
+        y = spacey*i
 
-        x1 = 0
-        x2 = 800
-
-        line = [(x1,y), (x2, y)]
-
+        line = [(startx, y), (endx, y)]
         line_box.append(line)
 
-    line_box = np.array(line_box)
-
-    return line_box
+    return np.array(line_box)
 
 
 
@@ -118,24 +120,29 @@ def plot_grid(ax, line_box):
     ax.add_collection(lc) 
 
     ax.set_xlim([-10, 810]) 
-    ax.set_ylim([-10, 110]) 
+    ax.set_ylim([-10, 510]) 
     return
 
 
 
 def main():
 
+
+    #----------------------
+    # Hyper parameters:
+    n_lanes = 4
+    n_neurons_per_lane = 4
+
+
     #----------------------
     # Get game:
     game = CarGame()
 
-    line_box = create_line_box()
-    line_box = np.array(line_box)
+    line_box = create_grid_line_box(n_lanes, n_neurons_per_lane)
         
     fig, ax = plt.subplots()
-
-
     plot_grid(ax, line_box)
+
     plt.savefig('testfig.png')
 
     
