@@ -249,7 +249,12 @@ def main():
     # moves one neuron box 
     game.obstacle_vel = spacex      # pixels
     game.delay_ms     = 100        # ms
+
     
+
+    
+    #game.obstacle_width = spacex
+    #game.obstacle_height = spacey
 
 
     #-------------------------------------------------

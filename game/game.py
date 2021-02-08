@@ -67,7 +67,7 @@ class CarGame:
         self.obstacle_y = self.win_height - self.obstacle_height
         self.obstacle_vel = 5
 
-        self.obstacle_spawn_prob = 0.003
+        self.obstacle_spawn_prob = 0.03
         
         
 
@@ -135,6 +135,8 @@ class CarGame:
 
         obstacle_center_x = self.obstacle_x + self.obstacle_width/2
         player_center_x = self.player_pos_x + self.player_width/2
+        print(self.obstacle_x)
+        exit('hore')
 
         obstacle_center_y = self.obstacle_y + self.obstacle_height/2
         player_center_y = self.player_pos_y + self.player_height/2
@@ -144,8 +146,19 @@ class CarGame:
         # check if too close in x dimension
         #-------------------------------------------------
 
+        print(abs(player_center_x - obstacle_center_x))
+
+
+        print(self.obstacle_width/2 + self.player_width/2)
+
         criterion1 = abs(player_center_x - obstacle_center_x) <= (self.obstacle_width/2 
                                                                  + self.player_width/2)
+
+
+        
+
+
+        exit('vada')
 
 
         #-------------------------------------------------
@@ -251,8 +264,6 @@ class CarGame:
  
     def play_one_step(self):
 
-        self.delay()
-        
         keys = pg.key.get_pressed()
         events = pg.event.get()
 
@@ -285,6 +296,7 @@ class CarGame:
         #---------------------------------------------
         # delay
         #---------------------------------------------
+        self.delay()
 
         return 
 
