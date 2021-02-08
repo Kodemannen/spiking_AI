@@ -25,6 +25,7 @@ class CarGame:
 
         self.jump_vel = 5
         self.fall_vel = 5
+
         self.move_vel = 1
         self.jump_height = 45
         #self.jump_height = # roof is at 0
@@ -32,8 +33,10 @@ class CarGame:
 
         self.player_color = (153, 102, 255)
 
+
         #--------------------------------
         # Player params:
+        #--------------------------------
         self.player_width = 20
         self.player_height = 10
 
@@ -56,6 +59,7 @@ class CarGame:
  
         #--------------------------------
         # Obstacle:
+        #--------------------------------
         self.obstacle_size = (7, 30)              # width, height 
         self.obstacle_width, self.obstacle_height = self.obstacle_size
         self.obstacle_color = (153, 255, 187)
@@ -70,12 +74,23 @@ class CarGame:
     def update_player(self, keys):
         
         #-----------------------------------------
-        # Horizontal movement:
+        # horizontal movement:
+        #-----------------------------------------
+        
         if keys[pg.K_h]==1:
             self.player_pos_x -= self.move_vel
         if keys[pg.K_l]==1:
             self.player_pos_x += self.move_vel
 
+
+        #-----------------------------------------
+        # vertical movement:
+        #-----------------------------------------
+        
+        if keys[pg.K_k]==1:
+            self.player_pos_y -= self.move_vel
+        if keys[pg.K_j]==1:
+            self.player_pos_y += self.move_vel
 
         return 0
 
@@ -113,6 +128,10 @@ class CarGame:
 
 
     def check_hit(self):
+        
+        #-------------------------------------------------
+        # Check for hit
+        #-------------------------------------------------
 
         obstacle_center_x = self.obstacle_x + self.obstacle_width/2
         player_center_x = self.player_pos_x + self.player_width/2
@@ -120,16 +139,31 @@ class CarGame:
         obstacle_center_y = self.obstacle_y + self.obstacle_height/2
         player_center_y = self.player_pos_y + self.player_height/2
 
+
+        #-------------------------------------------------
+        # check if too close in x dimension
+        #-------------------------------------------------
+
         criterion1 = abs(player_center_x - obstacle_center_x) <= (self.obstacle_width/2 
                                                                  + self.player_width/2)
+
+
+        #-------------------------------------------------
+        # check if too close in y dimension
+        #-------------------------------------------------
 
         criterion2 = abs(player_center_y - obstacle_center_y) <= (self.obstacle_height/2 
                                                                  + self.player_height/2)
 
+
+        #-------------------------------------------------
+        # both must be true for it to be a hit
+        #-------------------------------------------------
+
         if criterion1 and criterion2:
-            
-            print('hit')
-            print('game over')
+            self.quit_game()
+
+        return
 
 
 
@@ -142,6 +176,7 @@ class CarGame:
 
 
     def run_game_cycle(self, keys):
+
         self.update_player(keys)
         self.update_obstacle()
         self.update_background()
@@ -187,15 +222,29 @@ class CarGame:
         return
 
 
+    def set_delay(self, delay):
+
+        ''' 
+        Set the value of the delay here in ms
+        '''
+
+        self.delay_ms = delay
+
+        return
+
+
     def delay(self):
         ''' 
                 Induces a small delay between each timestep in the game
         '''
+        assert self.delay_ms, 'lacking delay value'
+
         pg.time.delay(self.delay_ms)
         return
 
 
     def quit_game(self):
+
         pg.quit()
         exit('exited game')
 
@@ -207,21 +256,45 @@ class CarGame:
         keys = pg.key.get_pressed()
         events = pg.event.get()
 
+
+        #---------------------------------------------
+        # run one simulation step:
+        #---------------------------------------------
         self.run_game_cycle(keys)
+
+
+        #---------------------------------------------
+        # check for key events like hits: 
+        #---------------------------------------------
         self.evaluate()
+
+
+        #---------------------------------------------
+        # render graphics:
+        #---------------------------------------------
         self.render()
 
+
+        #---------------------------------------------
+        # exit by pressing q
+        #---------------------------------------------
         if keys[pg.K_q] == 1:
-            #--------------exit-----------------
             self.quit_game()
-            #-----------------------------------
+
+
+        #---------------------------------------------
+        # delay
+        #---------------------------------------------
 
         return 
 
 
     def get_pixels(self):
-        #------------------------------------------------
+
+        #--------------------------------------------
         # Feed state to neural network
+        #--------------------------------------------
+
         surface = pg.display.get_surface()
         surface_array = pg.surfarray.array2d(surface)
 
@@ -229,11 +302,12 @@ class CarGame:
 
 
     def draw_grid(self):
-        '''
-        - Draws a background grid that indicates the pixels 
-            - Using pg.draw.lines()
-        - Assumes that self.grid exists
-        '''
+
+        #---------------------------------------------
+        # - Draws a background grid that indicates the pixels 
+        #     - Using pg.draw.lines()
+        # - Assumes that self.grid exists
+        #---------------------------------------------
 
         line_color = (153, 255, 187)    # RGB
         line_width = 5                  # 1 is default

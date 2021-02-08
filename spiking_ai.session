@@ -7,16 +7,18 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +1 main.py
-badd +19 game/game.py
-badd +1 snn/snn.py
-badd +1 snn/functions.py
+badd +35 main.py
+badd +54 game/game.py
+badd +80 snn/snn.py
+badd +2 snn/functions.py
 badd +3 workspace.sh
+badd +13 notes
+badd +65 ~/.config/nvim/init.vim
 argglobal
 %argdel
 $argadd main.py
 set stal=2
-edit main.py
+edit game/game.py
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
@@ -29,8 +31,8 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
+exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
+exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
 argglobal
 setlocal fdm=manual
 setlocal fde=0
@@ -41,15 +43,15 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 35 - ((19 * winheight(0) + 18) / 37)
+let s:l = 102 - ((15 * winheight(0) + 16) / 32)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-35
-normal! 0
+102
+normal! 010|
 wincmd w
 argglobal
-if bufexists("game/game.py") | buffer game/game.py | else | edit game/game.py | endif
+if bufexists("main.py") | buffer main.py | else | edit main.py | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -59,15 +61,15 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 215 - ((31 * winheight(0) + 18) / 37)
+let s:l = 242 - ((17 * winheight(0) + 16) / 32)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-215
-normal! 0
+242
+normal! 016|
 wincmd w
-exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
+exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
+exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
 tabedit snn/snn.py
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -81,8 +83,8 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
+exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
+exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
 argglobal
 setlocal fdm=manual
 setlocal fde=0
@@ -93,15 +95,15 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 80 - ((4 * winheight(0) + 18) / 37)
+let s:l = 80 - ((15 * winheight(0) + 15) / 31)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 80
-normal! 0
+normal! 09|
 wincmd w
 argglobal
-if bufexists("snn/functions.py") | buffer snn/functions.py | else | edit snn/functions.py | endif
+if bufexists("main.py") | buffer main.py | else | edit main.py | endif
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -111,16 +113,16 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 2 - ((1 * winheight(0) + 18) / 37)
+let s:l = 35 - ((15 * winheight(0) + 15) / 31)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-2
+35
 normal! 0
 wincmd w
-exe 'vert 1resize ' . ((&columns * 106 + 106) / 212)
-exe 'vert 2resize ' . ((&columns * 105 + 106) / 212)
-tabnext 1
+exe 'vert 1resize ' . ((&columns * 105 + 105) / 211)
+exe 'vert 2resize ' . ((&columns * 105 + 105) / 211)
+tabnext 2
 set stal=1
 if exists('s:wipebuf') && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

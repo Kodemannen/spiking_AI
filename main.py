@@ -19,13 +19,28 @@ from snn.snn import SNN
 
 
 
-def split_pixels(pixels, nx=100, ny=50):
-    '''
-    Divide the pixels into compartments that are used as input to single neurons
+def split_pixels(pixels, spacex=100, spacey=50):
     '''
 
-    img_length = pixels.shape[1]   # length is n columns
-    img_height = pixels.shape[0]   # height is n rows
+    Splits an input image into squares, given 
+    some chosen square size spacex*spacey
+
+    -----------------------------------------------------------------
+    Input argument          : Type          | Description 
+    -----------------------------------------------------------------
+
+        pixels              : numpy array   | input image
+        spacex              : integer       | horizontal cell size
+        spacey              : integer       | vertical cell size
+
+    '''
+    #spacex = win_size[0]/n_neurons_per_lane             # horizontal cell space 
+    #spacey = win_size[1]/n_lanes                        # vertical cell space
+
+
+    img_length = pixels.shape[1]            # integer 
+    img_height = pixels.shape[0]            # integer
+
 
     splitted = []
 
@@ -34,32 +49,29 @@ def split_pixels(pixels, nx=100, ny=50):
     done = False
     while not done:
 
-        cutout = pixels[j:j+ny, i:i+nx] 
+        cutout = np.array(pixels[j:j+spacey, i:i+spacex]) 
         splitted.append(cutout) 
 
-        #plt.imshow(pixels)
-        #plt.pause(0.05)
-        #pixels[j:j+ny, i:i+nx] = 1
-
         # Move to next cutout:
-        i += nx
+        i += spacex
         if i >= img_length - 1:
             i = 0
-            j += ny
+            j += spacey
 
         # Check if done:
         if j >= img_height:
             done = True
-
-    #plt.show()
         
-    return np.array(splitted)
+    splitted = np.array(splitted)
+
+    return splitted
 
 
 
-def get_input_vector(pixels, nx, ny):
 
-    splitted = split_pixels(pixels, nx=nx, ny=ny)
+def get_input_vector(pixels, spacex, spacey):
+
+    splitted = split_pixels(pixels, spacex=spacex, spacey=spacey)
     input_vector = np.sum(splitted, axis=(1,2))
 
     return input_vector
@@ -67,16 +79,16 @@ def get_input_vector(pixels, nx, ny):
 
 
 def create_grid_line_box(n_lanes, n_neurons_per_lane, win_size):
-
     '''
+
     Creates a list containing the lines of a grid
 
     -----------------------------------------------------------------
-    Parameter               : Type          | Description 
+    Input argument              : Type          | Description 
     -----------------------------------------------------------------
 
-        n_lanes             : integer       | number of car lanes
-        n_neurons_per_lane  : integer       | neurons per car lane
+        n_lanes                 : integer       | number of car lanes
+        n_neurons_per_lane      : integer       | neurons per car lane
 
     '''
 
@@ -114,17 +126,22 @@ def create_grid_line_box(n_lanes, n_neurons_per_lane, win_size):
 
 
 
-def plot_grid(ax, line_box):
+def plot_grid(ax, line_box, auto_adjust=True):
 
     lc = mc.LineCollection(line_box, linewidths=1, color='black') # choose color here
     ax.add_collection(lc) 
 
-    # Adjusting 'zoom level' to grid:
-    xs = line_box[:,0,0]
-    ys = line_box[:,1,1]
+    if auto_adjust:
 
-    ax.set_xlim(xs.min(), xs.max())
-    ax.set_ylim(ys.min(), ys.max())
+        #-------------------------------------------------
+        # Adjusting 'zoom level' to grid:
+        #-------------------------------------------------
+
+        xs = line_box[:,0,0]
+        ys = line_box[:,1,1]
+
+        ax.set_xlim(xs.min(), xs.max())
+        ax.set_ylim(ys.min(), ys.max())
 
     #ax.set_xlim([-10, 1000])
     #ax.set_ylim([-10, 350])
@@ -133,71 +150,132 @@ def plot_grid(ax, line_box):
 
 
 
+def split_and_get_grid_lines(pixels, ):
+    pass
+    
+    
+
 
 def main():
+    
+    ##################################################
+
+            #####  ##### ###### ##  ##  ####
+            #      ##      ##   ##  ##  ##  #
+            #####  ####    ##   ##  ##  ####
+                #  ##      ##   ##  ##  ##
+            #####  #####   ##   ######  ##
+
+    ##################################################
+
+    #-------------------------------------------------
+    # Game settings:
+    #-------------------------------------------------
+    win_size = win_width, win_height = 800, 100             # pixels
 
 
-    #----------------------
-    # Hyper parameters:
+
+    #-------------------------------------------------
+    # Simulation settings:
+    #-------------------------------------------------
+    dt = 0.1                        # time resolution
+
+
+
+    #-------------------------------------------------
+    # Animation settings: 
+    #-------------------------------------------------
+    fps = 30                        
+
+
+
+    #-------------------------------------------------
+    # Hyper-parameters:
+    #-------------------------------------------------
     n_lanes = 2
-    n_neurons_per_lane = 5
+    n_neurons_per_lane = 8          # must be even      
 
 
-    #----------------------
-    # Get game:
-    win_size = 800, 100                         # units of pixels
 
+    #-------------------------------------------------
+    # Create game instance:
+    #-------------------------------------------------
     game = CarGame(win_size)
 
-    line_box = create_grid_line_box(n_lanes, n_neurons_per_lane, win_size)
         
+
+    #-------------------------------------------------
+    # Create grid:
+    #-------------------------------------------------
+
+    spacex = int(win_width  / n_neurons_per_lane)             # horizontal cell space
+    spacey = int(win_height / n_lanes)                        # vertical cell space
+
+    line_box = create_grid_line_box(n_lanes, n_neurons_per_lane, win_size)
+
     dpi = 150
     fig, ax = plt.subplots(figsize=np.array(win_size)/dpi)
     plot_grid(ax, line_box)
 
     plt.axis('off')
+    plt.tight_layout()
     plt.savefig('testfig.png')
+    #exit('jall')
     
 
-    exit('jallu')
 
-    #----------------------
-    # Get spiking neural network:
+    #-------------------------------------------------
+    # Create spiking neural network instance:
+    #-------------------------------------------------
     snn = SNN(snn_config=None, 
               n_excitatory=5, 
               n_inhibitory=4, 
-              n_inputs=10, 
+              n_inputs=n_neurons_per_lane*n_lanes, 
               n_outputs=10, 
               use_noise=False,
-              dt=0.1,
+              dt=dt,
               input_node_type='poisson_generator'
               #input_node_type='spike_generator'
               )
 
-    fps = 30
 
-    #----------------------
-    # Start playing
+    #-------------------------------------------------
+    # Stuff
+    #-------------------------------------------------
+
+
+                                    # unit:
+    # set velocity so that it 
+    # moves one neuron box 
+    game.obstacle_vel = spacex      # pixels
+    game.delay_ms     = 100        # ms
+    
+
+
+    #-------------------------------------------------
+    # Start game loop
+    #-------------------------------------------------
     playing = True
+
 
     while playing:
 
         game.play_one_step()
-        pixels = game.get_pixels()  # input for the snn
-        pixels = pixels.T.astype(np.float)
 
+        pixels = game.get_pixels()  # input for the snn
+
+        pixels = pixels.T.astype(np.float)
         pixels[:,:] /= 10053375
 
 
-        square_side_x = 100           # n pixels per square that represents a retinal neuron 
-        square_size_y = 50
-
-        #n_input_neurons = 4
-        #input_vector = get_input_vector(pixels, nx=square_side_x, ny=square_size_y) 
+        #input_vector = get_input_vector(pixels, spacex=square_side_x, spacey=square_size_y) 
         # input_vector.shape = (n_neurons, ) 
 
-        splitted = split_pixels(pixels, nx=square_side_x, ny=square_size_y)
-        print(splitted.shape) 
+
+        splitted = split_pixels(pixels, spacex, spacey)
+
+
+        #print(splitted.shape) 
 
         neuron1 = pixels[0:50,400:500]
         neuron2 = pixels[50:100,400:500]
