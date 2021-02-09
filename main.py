@@ -212,6 +212,9 @@ def main():
     spacey = int(win_height / n_lanes)                        # vertical cell space
 
     line_box = create_grid_line_box(n_lanes, n_neurons_per_lane, win_size)
+    game.grid_lines = line_box
+
+
 
     dpi = 150
     fig, ax = plt.subplots(figsize=np.array(win_size)/dpi)

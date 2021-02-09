@@ -320,7 +320,6 @@ class CarGame:
 
     def draw_grid(self):
         print('grid ingame not implemented')
-        return 
 
         #---------------------------------------------
         # - Draws a background grid that indicates the pixels 
