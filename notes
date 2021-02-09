@@ -18,4 +18,5 @@ CURRENT:
 
         # Looks like since the obstacle_x = False at the beginning, that causes it to quit, since
           the game thinks it at origo, so when we increase width, it hits the player!
+                # should maybe not start as False
 	

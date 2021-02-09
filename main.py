@@ -242,8 +242,6 @@ def main():
     #-------------------------------------------------
     # Stuff
     #-------------------------------------------------
-
-
                                     # unit:
     # set velocity so that it 
     # moves one neuron box 
@@ -251,10 +249,12 @@ def main():
     game.delay_ms     = 100        # ms
 
     
+    #-------------------------------------------------
+    # make obstacles move on the neuron grid 
+    #-------------------------------------------------
 
-    
-    #game.obstacle_width = spacex
-    #game.obstacle_height = spacey
+    game.obstacle_width = spacex
+    game.obstacle_height = spacey
 
 
     #-------------------------------------------------
@@ -270,7 +270,7 @@ def main():
         pixels = game.get_pixels()  # input for the snn
 
         pixels = pixels.T.astype(np.float)
-        pixels[:,:] /= 10053375
+        pixels[:,:] /= 10053375     # normalized to contain values in (0, 1)
 
 
         #input_vector = get_input_vector(pixels, spacex=square_side_x, spacey=square_size_y) 

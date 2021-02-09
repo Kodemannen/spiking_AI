@@ -21,17 +21,7 @@ class CarGame:
 
         self.win = pg.display.set_mode(self.win_size)
         self.delay_ms = 10
- 
 
-        self.jump_vel = 5
-        self.fall_vel = 5
-
-        self.move_vel = 1
-        self.jump_height = 45
-        #self.jump_height = # roof is at 0
-        #self.floor = self.win_height - self.player_height
-
-        self.player_color = (153, 102, 255)
 
 
         #--------------------------------
@@ -39,6 +29,12 @@ class CarGame:
         #--------------------------------
         self.player_width = 20
         self.player_height = 10
+
+        self.move_vel_x = self.player_width
+        self.move_vel_y = self.player_height
+
+        self.player_color = (153, 102, 255)
+
 
 
         # vertical space between player/car and lane border
@@ -63,7 +59,9 @@ class CarGame:
         self.obstacle_size = (7, 30)              # width, height 
         self.obstacle_width, self.obstacle_height = self.obstacle_size
         self.obstacle_color = (153, 255, 187)
-        self.obstacle_x = False
+
+        self.obstacle_island = 999
+        self.obstacle_x = self.obstacle_island    # just need some place far away
         self.obstacle_y = self.win_height - self.obstacle_height
         self.obstacle_vel = 5
 
@@ -78,9 +76,9 @@ class CarGame:
         #-----------------------------------------
         
         if keys[pg.K_h]==1:
-            self.player_pos_x -= self.move_vel
+            self.player_pos_x -= self.move_vel_x
         if keys[pg.K_l]==1:
-            self.player_pos_x += self.move_vel
+            self.player_pos_x += self.move_vel_x
 
 
         #-----------------------------------------
@@ -88,9 +86,9 @@ class CarGame:
         #-----------------------------------------
         
         if keys[pg.K_k]==1:
-            self.player_pos_y -= self.move_vel
+            self.player_pos_y -= self.move_vel_y
         if keys[pg.K_j]==1:
-            self.player_pos_y += self.move_vel
+            self.player_pos_y += self.move_vel_y
 
         return 0
 
@@ -102,7 +100,13 @@ class CarGame:
         '''
 
         # Spawn or not:
-        if self.obstacle_x == False: 
+
+        #-----------------------------------------
+        # check if on island (storage place 
+        # outside the game window 
+        #-----------------------------------------
+
+        if self.obstacle_x == self.obstacle_island: 
             dice = np.random.random()
             if dice <= self.obstacle_spawn_prob:
                 # Start the right:
@@ -110,13 +114,17 @@ class CarGame:
             else:
                 pass
 
-        # If already spawned:
+
+        #-----------------------------------------
+        # if already spawned:
+        #-----------------------------------------
+
         else:
             self.obstacle_x -= self.obstacle_vel
 
             # if exited screen:
             if self.obstacle_x < 0:
-                self.obstacle_x = False
+                self.obstacle_x = self.obstacle_island
 
         return 0
 
@@ -124,6 +132,7 @@ class CarGame:
     def evaluate(self):
 
         self.check_hit()
+        pass
 
 
 
@@ -135,8 +144,6 @@ class CarGame:
 
         obstacle_center_x = self.obstacle_x + self.obstacle_width/2
         player_center_x = self.player_pos_x + self.player_width/2
-        print(self.obstacle_x)
-        exit('hore')
 
         obstacle_center_y = self.obstacle_y + self.obstacle_height/2
         player_center_y = self.player_pos_y + self.player_height/2
@@ -153,12 +160,6 @@ class CarGame:
 
         criterion1 = abs(player_center_x - obstacle_center_x) <= (self.obstacle_width/2 
                                                                  + self.player_width/2)
-
-
-        
-
-
-        exit('vada')
 
 
         #-------------------------------------------------
@@ -194,7 +195,7 @@ class CarGame:
         self.update_obstacle()
         self.update_background()
     
-        return 0
+        return 
 
     
     def render_player(self):
@@ -209,7 +210,7 @@ class CarGame:
 
 
     def render_obstacle(self):
-        if not self.obstacle_x == False:
+        if not self.obstacle_x == 999:
             pg.draw.rect(self.win, 
                          self.obstacle_color, 
                          (self.obstacle_x, 
@@ -219,8 +220,11 @@ class CarGame:
         return
 
 
+
     def render_background(self):
+        self.draw_grid()
         return
+
 
 
     def render(self):
@@ -274,16 +278,17 @@ class CarGame:
         self.run_game_cycle(keys)
 
 
-        #---------------------------------------------
-        # check for key events like hits: 
-        #---------------------------------------------
-        self.evaluate()
 
 
         #---------------------------------------------
         # render graphics:
         #---------------------------------------------
         self.render()
+
+        #---------------------------------------------
+        # check for key events like hits: 
+        #---------------------------------------------
+        self.evaluate()
 
 
         #---------------------------------------------
@@ -314,6 +319,8 @@ class CarGame:
 
 
     def draw_grid(self):
+        print('grid ingame not implemented')
+        return 
 
         #---------------------------------------------
         # - Draws a background grid that indicates the pixels 
@@ -328,7 +335,6 @@ class CarGame:
 
         for i in range(n_tot_lines):
 
-            print('wasd')
             line = self.grid_lines[i]
 
             start_line = line[0]       # (x, y) coordinate
