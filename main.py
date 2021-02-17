@@ -212,7 +212,7 @@ def main():
     spacey = int(win_height / n_lanes)                        # vertical cell space
 
     line_box = create_grid_line_box(n_lanes, n_neurons_per_lane, win_size)
-    game.grid_lines = line_box
+    game.background_lines = line_box
 
 
 

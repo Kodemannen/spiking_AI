@@ -14,9 +14,7 @@ Plan:
 
 
 CURRENT:
-	#- Grid was implemented in pygame
 
-        # Looks like since the obstacle_x = False at the beginning, that causes it to quit, since
-          the game thinks it at origo, so when we increase width, it hits the player!
-                # should maybe not start as False
-	
+    # Need a better way to make the obstacle 
+      only move on the grid 
+

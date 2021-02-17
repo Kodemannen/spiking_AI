@@ -65,8 +65,14 @@ class CarGame:
         self.obstacle_y = self.win_height - self.obstacle_height
         self.obstacle_vel = 5
 
-        self.obstacle_spawn_prob = 0.03
+        self.obstacle_spawn_prob = 0.3
         
+
+
+        #--------------------------------
+        # Background stuff
+        #--------------------------------
+        self.grid_on = False
         
 
     def update_player(self, keys):
@@ -119,6 +125,9 @@ class CarGame:
         # if already spawned:
         #-----------------------------------------
 
+        # Need a better way to make the obstacle 
+        # only move on the grid 
+
         else:
             self.obstacle_x -= self.obstacle_vel
 
@@ -153,11 +162,6 @@ class CarGame:
         # check if too close in x dimension
         #-------------------------------------------------
 
-        print(abs(player_center_x - obstacle_center_x))
-
-
-        print(self.obstacle_width/2 + self.player_width/2)
-
         criterion1 = abs(player_center_x - obstacle_center_x) <= (self.obstacle_width/2 
                                                                  + self.player_width/2)
 
@@ -182,9 +186,12 @@ class CarGame:
 
 
     def update_background(self):
-        '''
-        Updating the positions of elements in the background
-        '''
+        
+        #---------------------------------------------
+        # Updating the positions of elements in the 
+        # background
+        #---------------------------------------------
+        
         pass
 
 
@@ -213,8 +220,8 @@ class CarGame:
         if not self.obstacle_x == 999:
             pg.draw.rect(self.win, 
                          self.obstacle_color, 
-                         (self.obstacle_x, 
-                          self.obstacle_y, 
+                         (self.obstacle_x - self.obstacle_width/2, 
+                          self.obstacle_y - self.obstacle_height/2, 
                           self.obstacle_width, 
                           self.obstacle_height))
         return
@@ -222,7 +229,7 @@ class CarGame:
 
 
     def render_background(self):
-        self.draw_grid()
+        self.draw_background_lines()
         return
 
 
@@ -241,10 +248,10 @@ class CarGame:
 
     def set_delay(self, delay):
 
-        ''' 
-        Set the value of the delay here in ms
-        '''
-
+        #---------------------------------------------
+        # Set the value of the delay here in ms
+        #---------------------------------------------
+       
         self.delay_ms = delay
 
         return
@@ -278,8 +285,6 @@ class CarGame:
         self.run_game_cycle(keys)
 
 
-
-
         #---------------------------------------------
         # render graphics:
         #---------------------------------------------
@@ -306,6 +311,8 @@ class CarGame:
         return 
 
 
+
+
     def get_pixels(self):
 
         #--------------------------------------------
@@ -318,8 +325,8 @@ class CarGame:
         return surface_array
 
 
-    def draw_grid(self):
-        print('grid ingame not implemented')
+
+    def draw_background_lines(self):
 
         #---------------------------------------------
         # - Draws a background grid that indicates the pixels 
@@ -328,13 +335,13 @@ class CarGame:
         #---------------------------------------------
 
         line_color = (153, 255, 187)    # RGB
-        line_width = 5                  # 1 is default
+        line_width = 1                  # 1 is default
 
-        n_tot_lines = len(self.grid_lines)
+        n_tot_lines = len(self.background_lines)
 
         for i in range(n_tot_lines):
 
-            line = self.grid_lines[i]
+            line = self.background_lines[i]
 
             start_line = line[0]       # (x, y) coordinate
             end_line   = line[1]       # (x, y) coordinate
@@ -345,7 +352,7 @@ class CarGame:
                          end_line, 
                          line_width)
 
-        pass
+        
 
  
 if __name__ == "__main__" :
