@@ -176,21 +176,21 @@ def main():
 
 
     #-------------------------------------------------
-    # Simulation settings:
+    # simulation settings:
     #-------------------------------------------------
     dt = 0.1                        # time resolution
 
 
 
     #-------------------------------------------------
-    # Animation settings: 
+    # animation settings: 
     #-------------------------------------------------
     fps = 30                        
 
 
 
     #-------------------------------------------------
-    # Hyper-parameters:
+    # hyper-parameters:
     #-------------------------------------------------
     n_lanes = 2
     n_neurons_per_lane = 8          # must be even      
@@ -198,21 +198,30 @@ def main():
 
 
     #-------------------------------------------------
-    # Create game instance:
+    # create game instance:
     #-------------------------------------------------
-    game = CarGame(win_size)
+    game = CarGame(win_size,
+                   obstacle_width=win_size[0]/n_neurons_per_lane, 
+                   obstacle_height=win_size[1]/n_lanes)
 
         
 
     #-------------------------------------------------
-    # Create grid:
+    # create background grid:
     #-------------------------------------------------
 
     spacex = int(win_width  / n_neurons_per_lane)             # horizontal cell space
     spacey = int(win_height / n_lanes)                        # vertical cell space
 
-    line_box = create_grid_line_box(n_lanes, n_neurons_per_lane, win_size)
-    game.background_lines = line_box
+    line_box = create_grid_line_box(n_lanes, 
+                                    n_neurons_per_lane, 
+                                    win_size)
+
+
+    #-------------------------------------------------
+    # Add background grid
+    #-------------------------------------------------
+    game.add_background_lines(background_lines=line_box) 
 
 
 

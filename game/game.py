@@ -12,7 +12,10 @@ class game_object:
 
  
 class CarGame:
-    def __init__(self, win_size):
+    def __init__(self, win_size, 
+                 obstacle_width, 
+                 obstacle_height):
+
         pg.init()
 
         self._running = False
@@ -53,11 +56,19 @@ class CarGame:
         #self.falling = False
 
  
-        #--------------------------------
+        #------------------------------------------------
         # Obstacle:
-        #--------------------------------
-        self.obstacle_size = (7, 30)              # width, height 
+        #------------------------------------------------
+        #self.obstacle_size = (7, 40)              # width, height 
+
+        #------------------------------------------------
+        # obstacle_size must be the grid size!
+        #------------------------------------------------
+
+
+        self.obstacle_size = obstacle_width, obstacle_height 
         self.obstacle_width, self.obstacle_height = self.obstacle_size
+
         self.obstacle_color = (153, 255, 187)
 
         self.obstacle_island = 999
@@ -72,7 +83,7 @@ class CarGame:
         #--------------------------------
         # Background stuff
         #--------------------------------
-        self.grid_on = False
+        self.background_lines_on = False
         
 
     def update_player(self, keys):
@@ -220,16 +231,18 @@ class CarGame:
         if not self.obstacle_x == 999:
             pg.draw.rect(self.win, 
                          self.obstacle_color, 
-                         (self.obstacle_x - self.obstacle_width/2, 
-                          self.obstacle_y - self.obstacle_height/2, 
+                         (self.obstacle_x, #- self.obstacle_width/2, 
+                          self.obstacle_y, #- self.obstacle_height/2, 
                           self.obstacle_width, 
                           self.obstacle_height))
+                          #1))
         return
 
 
 
     def render_background(self):
-        self.draw_background_lines()
+        if self.background_lines_on:
+            self.draw_background_lines()
         return
 
 
@@ -325,8 +338,16 @@ class CarGame:
         return surface_array
 
 
+    def add_background_lines(self, background_lines):
+        self.background_lines = background_lines
+        self.background_lines_on = True
+
+        return
+
 
     def draw_background_lines(self):
+
+
 
         #---------------------------------------------
         # - Draws a background grid that indicates the pixels 
@@ -343,8 +364,8 @@ class CarGame:
 
             line = self.background_lines[i]
 
-            start_line = line[0]       # (x, y) coordinate
-            end_line   = line[1]       # (x, y) coordinate
+            start_line = line[0]        # (x, y) coordinate
+            end_line   = line[1]        # (x, y) coordinate
 
             pg.draw.line(self.win, 
                          line_color, 
