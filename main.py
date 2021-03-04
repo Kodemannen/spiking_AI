@@ -158,7 +158,6 @@ def split_and_get_grid_lines(pixels, ):
 
 def main():
     
-    ##################################################
 
             #####  ##### ###### ##  ##  ####
             #      ##      ##   ##  ##  ##  #
@@ -166,7 +165,6 @@ def main():
                 #  ##      ##   ##  ##  ##
             #####  #####   ##   ######  ##
 
-    ##################################################
 
     #-------------------------------------------------
     # Game settings:
@@ -202,7 +200,8 @@ def main():
     #-------------------------------------------------
     game = CarGame(win_size,
                    obstacle_width=win_size[0]/n_neurons_per_lane, 
-                   obstacle_height=win_size[1]/n_lanes)
+                   obstacle_height=win_size[1]/n_lanes,
+                   n_lanes=n_lanes)
 
         
 

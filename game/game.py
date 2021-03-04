@@ -2,11 +2,20 @@ import numpy as np
 import pygame as pg
 from pygame.locals import *
 
-class game_object:
+class GameObject:
 
-    def __init__(self, position):
-        pass
+    def __init__(self, 
+                 pos=(999,999), 
+                 vel=(0,0),
+                 size=(5,5),
+                 color=(153, 255, 187),
+                 ):
 
+        self.pos_x, self.pos_y  = self.pos   = pos
+        self.vel_x, self.vel_y  = self.vel   = vel
+
+        self.width, self.height = self.size  = size
+        self.color = color 
 
 
 
@@ -14,7 +23,8 @@ class game_object:
 class CarGame:
     def __init__(self, win_size, 
                  obstacle_width, 
-                 obstacle_height):
+                 obstacle_height,
+                 n_lanes):
 
         pg.init()
 
@@ -24,6 +34,17 @@ class CarGame:
 
         self.win = pg.display.set_mode(self.win_size)
         self.delay_ms = 10
+
+        self.n_lanes = n_lanes
+
+
+        #--------------------------------
+        # Player params:
+        #--------------------------------
+
+        #self.player   = GameObject()
+        #self.obstacle = GameObject()
+
 
 
 
@@ -73,7 +94,8 @@ class CarGame:
 
         self.obstacle_island = 999
         self.obstacle_x = self.obstacle_island    # just need some place far away
-        self.obstacle_y = self.win_height - self.obstacle_height
+        self.obstacle_y = self.obstacle_island    # just need some place far away
+
         self.obstacle_vel = 5
 
         self.obstacle_spawn_prob = 0.3
@@ -128,6 +150,14 @@ class CarGame:
             if dice <= self.obstacle_spawn_prob:
                 # Start the right:
                 self.obstacle_x = self.win_width
+
+                lane = np.random.randint(1, self.n_lanes+1)
+                # lane 1:
+                self.obstacle_y = (self.win_height/self.n_lanes)*lane - self.obstacle_height
+
+                # lane 2:
+                #self.obstacle_y = self.win_height - self.obstacle_height
+
             else:
                 pass
 

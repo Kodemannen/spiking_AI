@@ -259,6 +259,7 @@ class SNN:
 
         #-----------------------------------------------
         # Random generating main pop positions:
+        #-----------------------------------------------
         positions_e = get_circular_positions(n_neurons=self.n_excitatory, 
                                              radius=radius_e, 
                                              center=center_e)
@@ -269,12 +270,14 @@ class SNN:
 
         #-----------------------------------------------
         # Generating input column:
+        #-----------------------------------------------
         positions_input = get_vertical_line_positions(n_neurons=self.n_inputs,
                                                       column_size=input_column_size,
                                                       column_center=input_column_center)
 
         #-----------------------------------------------
         # Generating output column:
+        #-----------------------------------------------
         positions_output = get_vertical_line_positions(n_neurons=self.n_outputs,
                                                        column_size=output_column_size,
                                                        column_center=output_column_center)
@@ -288,6 +291,7 @@ class SNN:
 
         #-----------------------------------------------
         # Storing positions by population in a dictionary
+        #-----------------------------------------------
         self.positions = dict(excitatory = positions_e,
                               inhibitory = positions_i,
                               input = positions_input,
@@ -296,6 +300,7 @@ class SNN:
 
         #-----------------------------------------------
         # storing all positions in a single box:
+        #-----------------------------------------------
         self.all_positions = np.zeros((self.n_total_nodes, 2))
         self.all_positions[np.array(self.e_population)-1] = positions_e
         self.all_positions[np.array(self.i_population)-1] = positions_i
@@ -386,11 +391,13 @@ class SNN:
 
         #-----------------------------------------------
         # Plotting nodes:
+        #-----------------------------------------------
         self.plot_all_nodes(ax)
 
 
         #-----------------------------------------------
         # Plotting connection lines:
+        #-----------------------------------------------
         self.plot_all_lines(ax)
 
 
@@ -412,10 +419,12 @@ class SNN:
 
         #----------------------------------------------
         # simulate
+        #-----------------------------------------------
         nest.Simulate(sim_time)
 
         #----------------------------------------------
         # analysis
+        #-----------------------------------------------
 
         stat_e = nest.GetStatus(self.e_spike_detector, 'events')[0]
         stat_i = nest.GetStatus(self.i_spike_detector, 'events')[0]     
@@ -429,7 +438,9 @@ class SNN:
         
 
         #----------------------------------------------
-        # separating out the firings from the most recent simulation 
+        # separating out the firings from the most 
+        # recent simulation 
+        #-----------------------------------------------
         # (after time T)
 
         times_e_indices  = np.argwhere( stat_e['times'] > T )[:,0]          
@@ -526,6 +537,7 @@ class SNN:
 
             #----------------------------------------------
             # Rounding up to grid:
+            #----------------------------------------------
             rounded = (spike_times // dt_anim) * dt_anim   # rounded to the left
             
             # Rounding to the right the ones that should be rounded to the right:
@@ -536,7 +548,9 @@ class SNN:
 
 
             #-------------------------------------------------
-            # Insert spike times at the correct indices in frame_matrix
+            # Insert spike times at the correct indices in 
+            # frame_matrix
+            #-------------------------------------------------
             for i in range(N):
                 t = timesteps_anim[i]
                 n_nodes = spike_times.shape[0]
