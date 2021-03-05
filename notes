@@ -15,6 +15,5 @@ Plan:
 
 CURRENT:
 
-    # Need a better way to make the obstacle 
-      only move on the grid 
+    # Implement food 
 

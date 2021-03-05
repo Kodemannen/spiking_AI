@@ -190,7 +190,7 @@ def main():
     #-------------------------------------------------
     # hyper-parameters:
     #-------------------------------------------------
-    n_lanes = 2
+    n_lanes = 3
     n_neurons_per_lane = 8          # must be even      
 
 
