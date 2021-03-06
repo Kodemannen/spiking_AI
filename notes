@@ -15,5 +15,9 @@ Plan:
 
 CURRENT:
 
-    # Implement food 
+    - Restructure using objects
+    - Implement food 
+        - this will make it possible to see the network having to 
+          make a decision, not just simply move away from everything 
+
 
