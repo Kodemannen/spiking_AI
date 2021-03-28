@@ -16,6 +16,9 @@ Plan:
 CURRENT:
 
     - Restructure using objects
+        - player + each obstacle should be GameObject instances
+
+
     - Implement food 
         - this will make it possible to see the network having to 
           make a decision, not just simply move away from everything 

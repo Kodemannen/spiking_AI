@@ -96,7 +96,7 @@ class CarGame:
         self.obstacle_x = self.obstacle_island    # just need some place far away
         self.obstacle_y = self.obstacle_island    # just need some place far away
 
-        self.obstacle_vel = 0
+        #self.obstacle_vel = 0
         self.obstacle_spawn_prob = 0.3
         
 

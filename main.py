@@ -190,20 +190,10 @@ def main():
     #-------------------------------------------------
     # hyper-parameters:
     #-------------------------------------------------
-    n_lanes = 3
+    n_lanes = 2
     n_neurons_per_lane = 8          # must be even      
 
 
-
-    #-------------------------------------------------
-    # create game instance:
-    #-------------------------------------------------
-    game = CarGame(win_size,
-                   obstacle_width=win_size[0]/n_neurons_per_lane, 
-                   obstacle_height=win_size[1]/n_lanes,
-                   n_lanes=n_lanes)
-
-        
 
     #-------------------------------------------------
     # create background grid:
@@ -215,6 +205,16 @@ def main():
     line_box = create_grid_line_box(n_lanes, 
                                     n_neurons_per_lane, 
                                     win_size)
+
+
+    #-------------------------------------------------
+    # create game instance:
+    #-------------------------------------------------
+    game = CarGame(win_size,
+                   obstacle_width=win_size[0]/n_neurons_per_lane, 
+                   obstacle_height=win_size[1]/n_lanes,
+                   n_lanes=n_lanes)
+
 
 
     #-------------------------------------------------
@@ -239,15 +239,15 @@ def main():
     # Create spiking neural network instance:
     #-------------------------------------------------
     snn = SNN(snn_config=None, 
-              n_excitatory=5, 
-              n_inhibitory=4, 
-              n_inputs=n_neurons_per_lane*n_lanes, 
-              n_outputs=10, 
-              use_noise=False,
-              dt=dt,
-              input_node_type='poisson_generator'
-              #input_node_type='spike_generator'
-              )
+            n_excitatory=5, 
+            n_inhibitory=4, 
+            n_inputs=n_neurons_per_lane*n_lanes, 
+            n_outputs=10, 
+            use_noise=False,
+            dt=dt,
+            input_node_type='poisson_generator'
+            #input_node_type='spike_generator'
+            )
 
 
     #-------------------------------------------------
@@ -256,8 +256,8 @@ def main():
                                     # unit:
     # set velocity so that it 
     # moves one neuron box 
-    game.obstacle_vel = spacex      # pixels
-    game.delay_ms     = 100        # ms
+    game.obstacle_vel = spacex/8      # pixels
+    game.delay_ms     = 1        # ms
 
     
     #-------------------------------------------------
@@ -266,6 +266,12 @@ def main():
 
     game.obstacle_width = spacex
     game.obstacle_height = spacey
+
+    obstacle_sum = spacex*spacey    # this should be approximately
+                                    # equal to the sum of 1s in 
+                                    # a grid square, i.e. what a
+                                    # neuron sees when the square
+                                    # is fully covered by the obstacle
 
 
     #-------------------------------------------------
@@ -279,6 +285,7 @@ def main():
         game.play_one_step()
 
         pixels = game.get_pixels()  # input for the snn
+        print(pixels.shape) 
 
         pixels = pixels.T.astype(np.float)
         pixels[:,:] /= 10053375     # normalized to contain values in (0, 1)
@@ -289,22 +296,31 @@ def main():
 
 
         splitted = split_pixels(pixels, spacex, spacey)
+        for ting in splitted:
+            print(ting)
+            print(np.sum(ting))
+            print(ting.shape)
+
+            #exit('asd')
+
+        print('==================')
 
 
         #print(splitted.shape) 
 
-        neuron1 = pixels[0:50,400:500]
-        neuron2 = pixels[50:100,400:500]
+        #neuron1 = pixels[0:50,400:500]
+        #neuron2 = pixels[50:100,400:500]
 
-        neurons = [neuron1, neuron2]
+        #neurons = [neuron1, neuron2]
 
-        firing_rates = np.sum(neurons, axis=(1,2))
+        #firing_rates = np.sum(neurons, axis=(1,2))
 
         #snn.simulate()
 
 
-        #plt.imshow(pixels)
-        #plt.savefig('output/testfig.png')
+        plt.imshow(np.flip(pixels, axis=0))
+        plt.savefig('testfig.png')
+        #exit('sd')
 
 
 
