@@ -33,6 +33,10 @@ class GameObject:
 
 
 
+class Player(GameObject):
+    pass
+
+
 class Obstacle(GameObject):
 
     def __init__(self, 
@@ -71,32 +75,38 @@ class CarGame:
         #self.player   = GameObject()
         #self.obstacle = GameObject()
 
+        #--------------------------------
+        # Player 
+        #--------------------------------
+        self.player = Player(pos=(0,0), 
+                            size=(20,10),
+                            color=(153, 102, 255))
 
 
 
         #--------------------------------
         # Player params:
         #--------------------------------
-        self.player_width = 20
-        self.player_height = 10
+        #self.player_width = 20
+        #self.player_height = 10
 
-        self.move_vel_x = self.player_width
-        self.move_vel_y = self.player_height
+        #self.move_vel_x = self.player_width
+        #self.move_vel_y = self.player_height
 
-        self.player_color = (153, 102, 255)
+        #self.player_color = (153, 102, 255)
 
 
 
         # vertical space between player/car and lane border
-        space_vertical = (self.win_height/2 - self.player_height ) / 2 
+        space_vertical = (self.win_height/2 - self.player.height)/2 
 
 
         # Initializing player state
-        self.player_pos_x = 20
-        #self.player_pos_y = 65
-        self.player_pos_y = self.win_height / 2 + space_vertical
+        #self.player_pos_x = 20
+        ##self.player_pos_y = 65
+        #self.player_pos_y = self.win_height / 2 + space_vertical
 
-        self.player_pos = (self.player_pos_x, self.player_pos_y)
+        #self.player_pos = (self.player_pos_x, self.player_pos_y)
 
 
         #self.jumping = False
@@ -133,9 +143,9 @@ class CarGame:
         #-----------------------------------------
         
         if keys[pg.K_h]==1:
-            self.player_pos_x -= self.move_vel_x
+            self.player.pos_x -= self.player.vel_x
         if keys[pg.K_l]==1:
-            self.player_pos_x += self.move_vel_x
+            self.player.pos_x += self.player.vel_x
 
 
         #-----------------------------------------
@@ -143,9 +153,9 @@ class CarGame:
         #-----------------------------------------
         
         if keys[pg.K_k]==1:
-            self.player_pos_y -= self.move_vel_y
+            self.player.pos_y -= self.player.vel_y
         if keys[pg.K_j]==1:
-            self.player_pos_y += self.move_vel_y
+            self.player.pos_y += self.player.vel_y
 
         return 0
 
@@ -169,6 +179,7 @@ class CarGame:
 
         if self.obstacle.pos_x == SPAWN_ISLAND[0]: 
             dice = np.random.random()
+
             if dice <= self.obstacle.spawn_prob:
                 # Start the right:
                 self.obstacle.pos_x = self.win_width
@@ -202,55 +213,6 @@ class CarGame:
 
 
 
-
-
-
-    #def update_obstacle(self):
-    #    '''
-    #    Update the position of the obstacle
-    #    '''
-
-    #    # Spawn or not:
-
-    #    #-----------------------------------------
-    #    # check if on island (storage place 
-    #    # outside the game window 
-    #    #-----------------------------------------
-
-    #    if self.obstacle_x == self.obstacle_island: 
-    #        dice = np.random.random()
-    #        if dice <= self.obstacle_spawn_prob:
-    #            # Start the right:
-    #            self.obstacle_x = self.win_width
-
-    #            lane = np.random.randint(1, self.n_lanes+1)
-    #            # lane 1:
-    #            self.obstacle_y = (self.win_height/self.n_lanes)*lane - self.obstacle_height
-
-    #            # lane 2:
-    #            #self.obstacle_y = self.win_height - self.obstacle_height
-
-    #        else:
-    #            pass
-
-
-    #    #-----------------------------------------
-    #    # if already spawned:
-    #    #-----------------------------------------
-
-    #    # Need a better way to make the obstacle 
-    #    # only move on the grid 
-
-    #    else:
-    #        self.obstacle_x -= self.obstacle_vel
-
-    #        # if exited screen:
-    #        if self.obstacle_x < 0:
-    #            self.obstacle_x = self.obstacle_island
-
-    #    return 0
-
-
     def evaluate(self):
 
         self.check_hit()
@@ -265,10 +227,10 @@ class CarGame:
         #-------------------------------------------------
 
         obstacle_center_x = self.obstacle.pos_x + self.obstacle.width/2
-        player_center_x = self.player_pos_x + self.player_width/2
+        player_center_x = self.player.pos_x + self.player.width/2
 
         obstacle_center_y = self.obstacle.pos_y + self.obstacle.height/2
-        player_center_y = self.player_pos_y + self.player_height/2
+        player_center_y = self.player.pos_y + self.player.height/2
 
 
         #-------------------------------------------------
@@ -276,7 +238,7 @@ class CarGame:
         #-------------------------------------------------
 
         criterion1 = abs(player_center_x - obstacle_center_x) <= (self.obstacle.width/2 
-                                                                 + self.player_width/2)
+                                                                 + self.player.width/2)
 
 
         #-------------------------------------------------
@@ -284,7 +246,7 @@ class CarGame:
         #-------------------------------------------------
 
         criterion2 = abs(player_center_y - obstacle_center_y) <= (self.obstacle.height/2 
-                                                                 + self.player_height/2)
+                                                                 + self.player.height/2)
 
 
         #-------------------------------------------------
@@ -320,11 +282,11 @@ class CarGame:
     
     def render_player(self):
         pg.draw.rect(self.win, 
-                     self.player_color, 
-                     (self.player_pos_x, 
-                      self.player_pos_y, 
-                      self.player_width, 
-                      self.player_height))
+                     self.player.color, 
+                     (self.player.pos_x, 
+                      self.player.pos_y, 
+                      self.player.width, 
+                      self.player.height))
         return
 
 
