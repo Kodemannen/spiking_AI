@@ -210,10 +210,12 @@ def main():
     #-------------------------------------------------
     # create game instance:
     #-------------------------------------------------
+    obstacle_width = win_size[0]/n_neurons_per_lane
+    obstacle_height=win_size[1]/n_lanes
+
     game = CarGame(win_size,
-                   obstacle_width=win_size[0]/n_neurons_per_lane, 
-                   obstacle_height=win_size[1]/n_lanes,
-                   n_lanes=n_lanes)
+                    obstacle_size=(obstacle_width, obstacle_height),
+                    n_lanes=n_lanes)
 
 
 
@@ -256,8 +258,8 @@ def main():
                                     # unit:
     # set velocity so that it 
     # moves one neuron box 
-    game.obstacle_vel = spacex/8      # pixels
-    game.delay_ms     = 1        # ms
+    game.obstacle_vel = spacex/1      # pixels
+    game.delay_ms     = 10        # ms
 
     
     #-------------------------------------------------
@@ -285,7 +287,7 @@ def main():
         game.play_one_step()
 
         pixels = game.get_pixels()  # input for the snn
-        print(pixels.shape) 
+        #print(pixels.shape) 
 
         pixels = pixels.T.astype(np.float)
         pixels[:,:] /= 10053375     # normalized to contain values in (0, 1)
@@ -296,14 +298,14 @@ def main():
 
 
         splitted = split_pixels(pixels, spacex, spacey)
-        for ting in splitted:
-            print(ting)
-            print(np.sum(ting))
-            print(ting.shape)
+        #for ting in splitted:
+        #    print(ting)
+        #    print(np.sum(ting))
+        #    print(ting.shape)
 
-            #exit('asd')
+        #    #exit('asd')
 
-        print('==================')
+        #print('==================')
 
 
         #print(splitted.shape) 
@@ -318,8 +320,8 @@ def main():
         #snn.simulate()
 
 
-        plt.imshow(np.flip(pixels, axis=0))
-        plt.savefig('testfig.png')
+        #plt.imshow(np.flip(pixels, axis=0))
+        #plt.savefig('testfig.png')
         #exit('sd')
 
 

@@ -2,14 +2,20 @@ import numpy as np
 import pygame as pg
 from pygame.locals import *
 
+SPAWN_ISLAND = (999, 999)
+
+
 class GameObject:
+    #----------------------------------------
+    # Class for a general object in the game
+    #----------------------------------------
 
     def __init__(self, 
-                 pos=(999,999), 
-                 vel=(0,0),
-                 size=(5,5),
-                 color=(153, 255, 187),
-                 ):
+                pos=SPAWN_ISLAND, 
+                vel=(2,1),
+                size=(5,5),
+                color=(153, 255, 187),
+                ):
 
         self.pos_x, self.pos_y  = self.pos   = pos
         self.vel_x, self.vel_y  = self.vel   = vel
@@ -18,13 +24,32 @@ class GameObject:
         self.color = color 
 
 
+    def set_size(self, size):
+        self.width, self.height = size
+
+
+    def set_velocity(self, vel):
+        self.vel_x, self.vel_y = vel
+
+
+
+class Obstacle(GameObject):
+
+    def __init__(self, 
+                spawn_prob=0.3):
+
+        super().__init__()
+        self.spawn_prob = spawn_prob
+
+
 
  
 class CarGame:
-    def __init__(self, win_size, 
-                 obstacle_width, 
-                 obstacle_height,
-                 n_lanes):
+    def __init__(self, 
+                win_size, 
+                obstacle_size,
+                n_lanes):
+
 
         pg.init()
 
@@ -36,6 +61,7 @@ class CarGame:
         self.delay_ms = 10
 
         self.n_lanes = n_lanes
+
 
 
         #--------------------------------
@@ -80,24 +106,17 @@ class CarGame:
         #------------------------------------------------
         # Obstacle:
         #------------------------------------------------
+        #obstacle_width, obstacle_height = obstacle_size
+        self.obstacle = Obstacle(spawn_prob=0.3)
+        self.obstacle.set_size(obstacle_size)
+
         #self.obstacle_size = (7, 40)              # width, height 
 
-        #------------------------------------------------
-        # obstacle_size must be the grid size!
-        #------------------------------------------------
 
 
-        self.obstacle_size = obstacle_width, obstacle_height 
-        self.obstacle_width, self.obstacle_height = self.obstacle_size
 
-        self.obstacle_color = (153, 255, 187)
+        #self.obstacle_width, self.obstacle_height = self.obstacle_size
 
-        self.obstacle_island = 999
-        self.obstacle_x = self.obstacle_island    # just need some place far away
-        self.obstacle_y = self.obstacle_island    # just need some place far away
-
-        #self.obstacle_vel = 0
-        self.obstacle_spawn_prob = 0.3
         
 
 
@@ -132,6 +151,9 @@ class CarGame:
 
 
 
+
+
+
     def update_obstacle(self):
         '''
         Update the position of the obstacle
@@ -144,18 +166,19 @@ class CarGame:
         # outside the game window 
         #-----------------------------------------
 
-        if self.obstacle_x == self.obstacle_island: 
+
+        if self.obstacle.pos_x == SPAWN_ISLAND[0]: 
             dice = np.random.random()
-            if dice <= self.obstacle_spawn_prob:
+            if dice <= self.obstacle.spawn_prob:
                 # Start the right:
-                self.obstacle_x = self.win_width
+                self.obstacle.pos_x = self.win_width
 
                 lane = np.random.randint(1, self.n_lanes+1)
                 # lane 1:
-                self.obstacle_y = (self.win_height/self.n_lanes)*lane - self.obstacle_height
+                self.obstacle.pos_y = (self.win_height/self.n_lanes)*lane - self.obstacle.height
 
                 # lane 2:
-                #self.obstacle_y = self.win_height - self.obstacle_height
+                #self.obstacle.pos_y = self.win_height - self.obstacle_height
 
             else:
                 pass
@@ -169,13 +192,63 @@ class CarGame:
         # only move on the grid 
 
         else:
-            self.obstacle_x -= self.obstacle_vel
+            self.obstacle.pos_x -= self.obstacle.vel_x
 
-            # if exited screen:
-            if self.obstacle_x < 0:
-                self.obstacle_x = self.obstacle_island
+            # if exited screen, return to spawn island:
+            if self.obstacle.pos_x < 0:
+                self.obstacle.pos_x = SPAWN_ISLAND
 
         return 0
+
+
+
+
+
+
+    #def update_obstacle(self):
+    #    '''
+    #    Update the position of the obstacle
+    #    '''
+
+    #    # Spawn or not:
+
+    #    #-----------------------------------------
+    #    # check if on island (storage place 
+    #    # outside the game window 
+    #    #-----------------------------------------
+
+    #    if self.obstacle_x == self.obstacle_island: 
+    #        dice = np.random.random()
+    #        if dice <= self.obstacle_spawn_prob:
+    #            # Start the right:
+    #            self.obstacle_x = self.win_width
+
+    #            lane = np.random.randint(1, self.n_lanes+1)
+    #            # lane 1:
+    #            self.obstacle_y = (self.win_height/self.n_lanes)*lane - self.obstacle_height
+
+    #            # lane 2:
+    #            #self.obstacle_y = self.win_height - self.obstacle_height
+
+    #        else:
+    #            pass
+
+
+    #    #-----------------------------------------
+    #    # if already spawned:
+    #    #-----------------------------------------
+
+    #    # Need a better way to make the obstacle 
+    #    # only move on the grid 
+
+    #    else:
+    #        self.obstacle_x -= self.obstacle_vel
+
+    #        # if exited screen:
+    #        if self.obstacle_x < 0:
+    #            self.obstacle_x = self.obstacle_island
+
+    #    return 0
 
 
     def evaluate(self):
@@ -191,10 +264,10 @@ class CarGame:
         # Check for hit
         #-------------------------------------------------
 
-        obstacle_center_x = self.obstacle_x + self.obstacle_width/2
+        obstacle_center_x = self.obstacle.pos_x + self.obstacle.width/2
         player_center_x = self.player_pos_x + self.player_width/2
 
-        obstacle_center_y = self.obstacle_y + self.obstacle_height/2
+        obstacle_center_y = self.obstacle.pos_y + self.obstacle.height/2
         player_center_y = self.player_pos_y + self.player_height/2
 
 
@@ -202,7 +275,7 @@ class CarGame:
         # check if too close in x dimension
         #-------------------------------------------------
 
-        criterion1 = abs(player_center_x - obstacle_center_x) <= (self.obstacle_width/2 
+        criterion1 = abs(player_center_x - obstacle_center_x) <= (self.obstacle.width/2 
                                                                  + self.player_width/2)
 
 
@@ -210,7 +283,7 @@ class CarGame:
         # check if too close in y dimension
         #-------------------------------------------------
 
-        criterion2 = abs(player_center_y - obstacle_center_y) <= (self.obstacle_height/2 
+        criterion2 = abs(player_center_y - obstacle_center_y) <= (self.obstacle.height/2 
                                                                  + self.player_height/2)
 
 
@@ -257,13 +330,13 @@ class CarGame:
 
 
     def render_obstacle(self):
-        if not self.obstacle_x == 999:
+        if not self.obstacle.pos_x == 999:
             pg.draw.rect(self.win, 
-                         self.obstacle_color, 
-                         (self.obstacle_x, #- self.obstacle_width/2, 
-                          self.obstacle_y, #- self.obstacle_height/2, 
-                          self.obstacle_width, 
-                          self.obstacle_height))
+                         self.obstacle.color, 
+                         (self.obstacle.pos_x, #- self.obstacle_width/2, 
+                          self.obstacle.pos_y, #- self.obstacle_height/2, 
+                          self.obstacle.width, 
+                          self.obstacle.height))
                           #1))
         return
 
