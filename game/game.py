@@ -207,7 +207,7 @@ class CarGame:
 
             # if exited screen, return to spawn island:
             if self.obstacle.pos_x < 0:
-                self.obstacle.pos_x = SPAWN_ISLAND
+                self.obstacle.pos_x = SPAWN_ISLAND[0]
 
         return 0
 
@@ -270,7 +270,6 @@ class CarGame:
         pass
 
 
-
     def run_game_cycle(self, keys):
 
         self.update_player(keys)
@@ -278,6 +277,7 @@ class CarGame:
         self.update_background()
     
         return 
+
 
     
     def render_player(self):
@@ -293,10 +293,17 @@ class CarGame:
 
     def render_obstacle(self):
         if not self.obstacle.pos_x == 999:
-            pg.draw.rect(self.win, 
-                         self.obstacle.color, 
-                         (self.obstacle.pos_x, #- self.obstacle_width/2, 
-                          self.obstacle.pos_y, #- self.obstacle_height/2, 
+            print(self.obstacle.pos_x)
+            #self.obstacle.pos_x = 0
+
+            print((self.obstacle.pos_x, 
+                          self.obstacle.pos_y,
+                          self.obstacle.width, 
+                          self.obstacle.height))
+
+            pg.draw.rect(self.win, self.obstacle.color, 
+                         (self.obstacle.pos_x, 
+                          self.obstacle.pos_y,
                           self.obstacle.width, 
                           self.obstacle.height))
                           #1))
