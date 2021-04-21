@@ -34,7 +34,7 @@ def split_pixels(pixels, spacex=100, spacey=50):
         spacey              : integer       | vertical cell size
 
     '''
-    #spacex = win_size[0]/n_neurons_per_lane             # horizontal cell space 
+    #spacex = win_size[0]/n_cells_per_lane             # horizontal cell space 
     #spacey = win_size[1]/n_lanes                        # vertical cell space
 
 
@@ -78,7 +78,7 @@ def get_input_vector(pixels, spacex, spacey):
 
 
 
-def create_grid_line_box(n_lanes, n_neurons_per_lane, win_size):
+def create_grid_line_box(n_lanes, n_cells_per_lane, win_size):
     '''
 
     Creates a list containing the lines of a grid
@@ -88,20 +88,20 @@ def create_grid_line_box(n_lanes, n_neurons_per_lane, win_size):
     -----------------------------------------------------------------
 
         n_lanes                 : integer       | number of car lanes
-        n_neurons_per_lane      : integer       | neurons per car lane
+        n_cells_per_lane      : integer       | neurons per car lane
 
     '''
 
-    n_vertical_lines   = n_neurons_per_lane + 1
+    n_vertical_lines   = n_cells_per_lane + 1
     n_horizontal_lines = n_lanes + 1
 
-    spacex = win_size[0]/n_neurons_per_lane             # horizontal cell space 
+    spacex = win_size[0]/n_cells_per_lane             # horizontal cell space 
     spacey = win_size[1]/n_lanes                        # vertical cell space
 
     startx = 0                                          # left vertical edge
     starty = 0                                          # top horizontal edge
 
-    endx = startx + spacex*n_neurons_per_lane           # right vertical edge
+    endx = startx + spacex*n_cells_per_lane           # right vertical edge
     endy = starty + spacey*n_lanes                      # bottom horizontal edge 
 
     line_box = []
@@ -169,7 +169,7 @@ def main():
     #-------------------------------------------------
     # Game settings:
     #-------------------------------------------------
-    win_size = win_width, win_height = 800, 100             # pixels
+    win_size = win_width, win_height = 800, 100         # pixels
 
 
 
@@ -177,6 +177,7 @@ def main():
     # simulation settings:
     #-------------------------------------------------
     dt = 0.1                        # time resolution
+    sim_time = 100                   # ms
 
 
 
@@ -191,7 +192,7 @@ def main():
     # hyper-parameters:
     #-------------------------------------------------
     n_lanes = 2
-    n_neurons_per_lane = 8          # must be even      
+    n_cells_per_lane = 8          # must be even      
 
 
 
@@ -199,12 +200,12 @@ def main():
     # create background grid:
     #-------------------------------------------------
 
-    spacex = int(win_width  / n_neurons_per_lane)             # horizontal cell space
+    spacex = int(win_width  / n_cells_per_lane)             # horizontal cell space
     spacey = int(win_height / n_lanes)                        # vertical cell space
     cell_size = spacex*spacey
 
     line_box = create_grid_line_box(n_lanes, 
-                                    n_neurons_per_lane, 
+                                    n_cells_per_lane, 
                                     win_size)
 
 
@@ -244,12 +245,12 @@ def main():
     snn = SNN(snn_config=None, 
             n_excitatory=5, 
             n_inhibitory=4, 
-            n_inputs=n_neurons_per_lane*n_lanes, 
+            n_inputs=2, 
             n_outputs=10, 
             use_noise=False,
             dt=dt,
-            input_node_type='poisson_generator'
-            #input_node_type='spike_generator'
+            #input_node_type='poisson_generator'
+            input_node_type='spike_generator'
             )
     snn.set_positions()
 
@@ -277,6 +278,7 @@ def main():
                                     # neuron sees when the square
                                     # is fully covered by the obstacle
 
+    T = 0       # accumulated time
 
     #-------------------------------------------------
     # Start game loop
@@ -308,7 +310,48 @@ def main():
         # cell to spikes
         #---------------------------------------------
 
+        max_val = cell_size
+        input_spikes = []
 
+        input_indices = [6, 14]
+        for i in input_indices:
+
+            # indexing to skip the edges
+            inp_ratio = np.sum(splitted[i][1:-1,1:-1]) / max_val
+
+
+            #-----------------------------------------
+            # mapping the number of pixels inside the 
+            # input neurons to firing rates:
+            #-----------------------------------------
+
+            freq = inp_ratio       # input_ratio*10/s 
+
+
+            #freq=0.3
+            period = 1/freq 
+             
+            spikes = np.arange(0.1 if T==0 else 0, sim_time, step=period)
+
+            input_spikes.append(spikes)
+            
+        print(snn.input_nodes)
+        snn.simulate(input_spikes=input_spikes,
+                    sim_time=sim_time,
+                    T=T)
+
+        #print(input_spikes) 
+        #for i in range(len(input_spikes)):
+        #    input_spikes[i]     # need to 
+
+        #exit('asd')
+
+        #exit('jalla')
+
+
+
+        T += sim_time
+        
 
 
 

@@ -500,6 +500,8 @@ class SNN:
         input_spike_times = [{'spike_times': np.round(spt, 1) + T } 
                                             for spt in input_spikes]
 
+        #input_spike_times = {'spike_times': np.arange(0.1, sim_time, step=0.2)}
+
         nest.SetStatus(self.input_nodes, input_spike_times)
 
         return self.__run_simulation(sim_time, T=T)
