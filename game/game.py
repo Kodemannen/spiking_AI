@@ -33,6 +33,8 @@ class GameObject:
 
 
 
+
+
 class Player(GameObject):
     pass
 
@@ -117,7 +119,7 @@ class CarGame:
         # Obstacle:
         #------------------------------------------------
         #obstacle_width, obstacle_height = obstacle_size
-        self.obstacle = Obstacle(spawn_prob=0.3)
+        self.obstacle = Obstacle(spawn_prob=0.005)
         self.obstacle.set_size(obstacle_size)
 
         #self.obstacle_size = (7, 40)              # width, height 
@@ -206,7 +208,7 @@ class CarGame:
             self.obstacle.pos_x -= self.obstacle.vel_x
 
             # if exited screen, return to spawn island:
-            if self.obstacle.pos_x < 0:
+            if self.obstacle.pos_x < -self.obstacle.width:
                 self.obstacle.pos_x = SPAWN_ISLAND[0]
 
         return 0
@@ -293,13 +295,12 @@ class CarGame:
 
     def render_obstacle(self):
         if not self.obstacle.pos_x == 999:
-            print(self.obstacle.pos_x)
             #self.obstacle.pos_x = 0
 
-            print((self.obstacle.pos_x, 
-                          self.obstacle.pos_y,
-                          self.obstacle.width, 
-                          self.obstacle.height))
+            #print((self.obstacle.pos_x, 
+            #              self.obstacle.pos_y,
+            #              self.obstacle.width, 
+            #              self.obstacle.height))
 
             pg.draw.rect(self.win, self.obstacle.color, 
                          (self.obstacle.pos_x, 

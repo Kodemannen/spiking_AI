@@ -201,6 +201,7 @@ def main():
 
     spacex = int(win_width  / n_neurons_per_lane)             # horizontal cell space
     spacey = int(win_height / n_lanes)                        # vertical cell space
+    cell_size = spacex*spacey
 
     line_box = create_grid_line_box(n_lanes, 
                                     n_neurons_per_lane, 
@@ -210,8 +211,8 @@ def main():
     #-------------------------------------------------
     # create game instance:
     #-------------------------------------------------
-    obstacle_width = win_size[0]/n_neurons_per_lane
-    obstacle_height=win_size[1]/n_lanes
+    obstacle_width = spacex
+    obstacle_height= spacey
 
     game = CarGame(win_size,
                     obstacle_size=(obstacle_width, obstacle_height),
@@ -250,6 +251,7 @@ def main():
             input_node_type='poisson_generator'
             #input_node_type='spike_generator'
             )
+    snn.set_positions()
 
 
     #-------------------------------------------------
@@ -280,8 +282,6 @@ def main():
     # Start game loop
     #-------------------------------------------------
     playing = True
-
-
     while playing:
 
         game.play_one_step()
@@ -297,7 +297,22 @@ def main():
         # input_vector.shape = (n_neurons, ) 
 
 
-        splitted = split_pixels(pixels, spacex, spacey)
+        splitted = split_pixels(pixels, spacex, spacey)     # (n_cells, *cell_shape)
+        print(np.sum(splitted[6]))
+        print(np.sum(splitted[14]))
+
+
+
+        #---------------------------------------------
+        # Here we must convert the pixels in any given
+        # cell to spikes
+        #---------------------------------------------
+
+
+
+
+
+
         #for ting in splitted:
         #    print(ting)
         #    print(np.sum(ting))
