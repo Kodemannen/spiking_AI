@@ -319,26 +319,25 @@ def main():
             # indexing to skip the edges
             inp_ratio = np.sum(splitted[i][1:-1,1:-1]) / max_val
 
-
             #-----------------------------------------
             # mapping the number of pixels inside the 
             # input neurons to firing rates:
             #-----------------------------------------
 
             freq = inp_ratio       # input_ratio*10/s 
-
-
-            #freq=0.3
             period = 1/freq 
              
             spikes = np.arange(0.1 if T==0 else 0, sim_time, step=period)
-
             input_spikes.append(spikes)
             
-        print(snn.input_nodes)
+
+        #---------------------------------------------
+        # Run snn simulation:
+        #---------------------------------------------
         snn.simulate(input_spikes=input_spikes,
                     sim_time=sim_time,
                     T=T)
+
 
         #print(input_spikes) 
         #for i in range(len(input_spikes)):
