@@ -92,6 +92,7 @@ class SNN:
         
         #-----------------------------------------------
         # Loading parameters:
+        #-----------------------------------------------
         with open('snn/default.json', 'r') as f:
           default_cfg = json.load(f)
 
@@ -101,6 +102,7 @@ class SNN:
 
         #-----------------------------------------------
         # Creating nodes:
+        #-----------------------------------------------
         # Must be created first and in the correct order.
         e_lif_params = self.snn_conf["e_lif_params"]
         i_lif_params = self.snn_conf["i_lif_params"]
@@ -116,6 +118,7 @@ class SNN:
 
         #-----------------------------------------------
         # Choosing format for inputs:
+        #-----------------------------------------------
         if input_node_type=='spike_generator':  
             self.input_nodes = nest.Create('spike_generator', 
                                             n_inputs)
@@ -132,6 +135,7 @@ class SNN:
 
         #-----------------------------------------------
         # Useful groupings:
+        #-----------------------------------------------
         self.all_nodes = (self.e_population 
                           + self.i_population 
                           + self.input_nodes
@@ -156,15 +160,16 @@ class SNN:
 
         #-----------------------------------------------
         # Creating spike detectors:
+        #-----------------------------------------------
         self.e_spike_detector = nest.Create('spike_detector')
         self.i_spike_detector = nest.Create('spike_detector')
 
         self.input_spike_detector = nest.Create('spike_detector')
-
         self.output_spike_detector = nest.Create('spike_detector')
 
         #-----------------------------------------------
         # Connection rules and parameters:
+        #-----------------------------------------------
         weight_e = 10.
         weight_i = -2.5
         weight_inp = 10.
@@ -185,6 +190,7 @@ class SNN:
 
         #-----------------------------------------------
         # Connecting nodes:
+        #-----------------------------------------------
         nest.Connect(self.e_population, 
                      self.e_population, 
                      rule_dict_e, 
@@ -222,6 +228,7 @@ class SNN:
 
         #-----------------------------------------------
         # Connecting to spike detectors:
+        #-----------------------------------------------
         nest.Connect(self.e_population, self.e_spike_detector)
         nest.Connect(self.i_population, self.i_spike_detector)
 
@@ -506,6 +513,77 @@ class SNN:
 
         return self.__run_simulation(sim_time, T=T)
 
+
+    def get_spikes(self):
+        
+        stat_e = nest.GetStatus(self.e_spike_detector, 'events')[0]
+        stat_i = nest.GetStatus(self.i_spike_detector, 'events')[0]     
+
+        stat_input = nest.GetStatus(self.input_spike_detector, 'events')[0]
+        stat_output = nest.GetStatus(self.output_spike_detector, 'events')[0]
+
+        # stat_x['times'] is a one dimensional list of spike times
+        # stat_x['senders'] is a one dimensional list of gids 
+        # corresponding to the spike times
+        
+
+        #----------------------------------------------
+        # separating out the firings from the most 
+        # recent simulation 
+        #-----------------------------------------------
+        # (after time T)
+
+        times_e_indices  = np.argwhere( stat_e['times'] > T )[:,0]          
+        times_i_indices  = np.argwhere( stat_i['times'] > T )[:,0]         
+        times_input_indices = np.argwhere( stat_input['times'] > T )[:,0] 
+        times_output_indices = np.argwhere( stat_output['times'] > T )[:,0]
+        
+        times_e = stat_e['times'][times_e_indices]
+        times_i = stat_i['times'][times_i_indices]
+        times_input = stat_input['times'][times_input_indices]
+        times_output = stat_output['times'][times_output_indices]
+
+        senders_e  = stat_e['senders'][times_e_indices]
+        senders_i  = stat_i['senders'][times_i_indices]
+        senders_input = stat_input['senders'][times_input_indices]
+        senders_output = stat_output['senders'][times_output_indices]
+
+        spikes_e = times_e, senders_e
+        spikes_i = times_i, senders_i
+        spikes_input = times_input, senders_input
+        spikes_output = times_output, senders_output
+
+        # extract spike times in an array per neuron
+        e_spike_times = get_spike_times_by_id(spikes_e, self.e_population)
+        i_spike_times = get_spike_times_by_id(spikes_i, self.i_population)
+
+        input_spike_times = get_spike_times_by_id(spikes_input, 
+                                                  self.input_nodes)
+
+        output_spike_times = get_spike_times_by_id(spikes_output, 
+                                                   self.output_nodes)
+
+
+        if len(e_spike_times) == 0:
+            print('no spikes')
+            return
+
+        # compute mean firing rates
+        rate_e = len(times_e) * 1000.0 / (
+                sim_time * float(self.n_excitatory))
+        rate_i = len(times_i) * 1000.0 / (
+                sim_time * float(self.n_inhibitory))
+
+        rate_input = len(times_input) * 1000.0 / (
+                sim_time * float(self.n_inputs))
+        rate_output = len(times_output) * 1000.0 / (
+                sim_time * float(self.n_outputs))
+
+
+        return (e_spike_times, i_spike_times, input_spike_times, 
+               output_spike_times, (rate_e, rate_i, rate_input, rate_output))
+        
+
     
     def generate_spike_frames(self, 
                               e_spike_times,      # shape=(n_excitatory, spike_times) 
@@ -642,8 +720,9 @@ class SNN:
             ax.set_ylim([-1., 2.5])
 
 
-        #-------------------------------------------------
+        #------------------------------------------------------------------
         # Generating .mp4
+        #------------------------------------------------------------------
         Writer = animation.writers['ffmpeg']
         writer = Writer(fps=fps, metadata=dict(artist="Me"), bitrate=850)
 
@@ -667,6 +746,7 @@ def run():
 
     #----------------------------------------------------------------------
     # Setting up SNN instance
+    #----------------------------------------------------------------------
     snn = SNN(n_excitatory=15, 
               n_inhibitory=5, 
               n_inputs=6, 
@@ -675,6 +755,7 @@ def run():
 
     #----------------------------------------------------------------------
     # Initializing positions:
+    #----------------------------------------------------------------------
     snn.set_positions(seed=2,#seed=np.random.randint(low=0,high=10e7),
 
                       radius_e=0.8, 
@@ -693,6 +774,7 @@ def run():
 
     #----------------------------------------------------------------------
     # Plotting connectome as image:
+    #----------------------------------------------------------------------
     plotting = True
     if plotting:
         fig, ax = plt.subplots()
@@ -704,6 +786,7 @@ def run():
 
     #----------------------------------------------------------------------
     # Simulating:
+    #----------------------------------------------------------------------
     sim_time = 10 * 1000
     
     # Dummy input spikes:
@@ -718,6 +801,7 @@ def run():
     
     #----------------------------------------------------------------------
     # Animating activity:
+    #----------------------------------------------------------------------
     snn.animate(e_spike_times, 
                 i_spike_times, 
                 input_spike_times, 

@@ -274,6 +274,8 @@ class CarGame:
 
     def run_game_cycle(self, keys):
 
+        self.playing = True
+
         self.update_player(keys)
         self.update_obstacle()
         self.update_background()
@@ -355,7 +357,8 @@ class CarGame:
     def quit_game(self):
 
         pg.quit()
-        exit('exited game')
+        self.playing = False
+        #exit('exited game')
 
  
     def play_one_step(self):

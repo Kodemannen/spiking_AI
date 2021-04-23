@@ -283,8 +283,8 @@ def main():
     #-------------------------------------------------
     # Start game loop
     #-------------------------------------------------
-    playing = True
-    while playing:
+    game.playing = True
+    while game.playing:
 
         game.play_one_step()
 
@@ -353,8 +353,6 @@ def main():
         
 
 
-
-
         #for ting in splitted:
         #    print(ting)
         #    print(np.sum(ting))
@@ -380,6 +378,20 @@ def main():
         #plt.imshow(np.flip(pixels, axis=0))
         #plt.savefig('testfig.png')
         #exit('sd')
+        print(T)
+
+        if T >= 10000:
+            playing = False
+            game.quit_game()
+
+
+    #---------------------------------------------
+    # After game over:
+    #---------------------------------------------
+    spikes = snn.get_spikes()
+    print(spikes)
+
+
 
 
 
