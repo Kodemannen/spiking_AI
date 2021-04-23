@@ -490,7 +490,9 @@ class SNN:
                 sim_time * float(self.n_excitatory))
         rate_i = len(times_i) * 1000.0 / (
                 sim_time * float(self.n_inhibitory))
-        rate_output = len(times_i) * 1000.0 / (
+        rate_input = len(times_input) * 1000.0 / (
+                sim_time * float(self.n_inputs))
+        rate_output = len(times_output) * 1000.0 / (
                 sim_time * float(self.n_outputs))
 
         print('mean excitatory rate: {0:.2f} Hz'.format(rate_e))
@@ -513,76 +515,6 @@ class SNN:
 
         return self.__run_simulation(sim_time, T=T)
 
-
-    def get_spikes(self):
-        
-        stat_e = nest.GetStatus(self.e_spike_detector, 'events')[0]
-        stat_i = nest.GetStatus(self.i_spike_detector, 'events')[0]     
-
-        stat_input = nest.GetStatus(self.input_spike_detector, 'events')[0]
-        stat_output = nest.GetStatus(self.output_spike_detector, 'events')[0]
-
-        # stat_x['times'] is a one dimensional list of spike times
-        # stat_x['senders'] is a one dimensional list of gids 
-        # corresponding to the spike times
-        
-
-        #----------------------------------------------
-        # separating out the firings from the most 
-        # recent simulation 
-        #-----------------------------------------------
-        # (after time T)
-
-        times_e_indices  = np.argwhere( stat_e['times'] > T )[:,0]          
-        times_i_indices  = np.argwhere( stat_i['times'] > T )[:,0]         
-        times_input_indices = np.argwhere( stat_input['times'] > T )[:,0] 
-        times_output_indices = np.argwhere( stat_output['times'] > T )[:,0]
-        
-        times_e = stat_e['times'][times_e_indices]
-        times_i = stat_i['times'][times_i_indices]
-        times_input = stat_input['times'][times_input_indices]
-        times_output = stat_output['times'][times_output_indices]
-
-        senders_e  = stat_e['senders'][times_e_indices]
-        senders_i  = stat_i['senders'][times_i_indices]
-        senders_input = stat_input['senders'][times_input_indices]
-        senders_output = stat_output['senders'][times_output_indices]
-
-        spikes_e = times_e, senders_e
-        spikes_i = times_i, senders_i
-        spikes_input = times_input, senders_input
-        spikes_output = times_output, senders_output
-
-        # extract spike times in an array per neuron
-        e_spike_times = get_spike_times_by_id(spikes_e, self.e_population)
-        i_spike_times = get_spike_times_by_id(spikes_i, self.i_population)
-
-        input_spike_times = get_spike_times_by_id(spikes_input, 
-                                                  self.input_nodes)
-
-        output_spike_times = get_spike_times_by_id(spikes_output, 
-                                                   self.output_nodes)
-
-
-        if len(e_spike_times) == 0:
-            print('no spikes')
-            return
-
-        # compute mean firing rates
-        rate_e = len(times_e) * 1000.0 / (
-                sim_time * float(self.n_excitatory))
-        rate_i = len(times_i) * 1000.0 / (
-                sim_time * float(self.n_inhibitory))
-
-        rate_input = len(times_input) * 1000.0 / (
-                sim_time * float(self.n_inputs))
-        rate_output = len(times_output) * 1000.0 / (
-                sim_time * float(self.n_outputs))
-
-
-        return (e_spike_times, i_spike_times, input_spike_times, 
-               output_spike_times, (rate_e, rate_i, rate_input, rate_output))
-        
 
     
     def generate_spike_frames(self, 
@@ -649,6 +581,73 @@ class SNN:
         return self.frames, self.timesteps_anim 
                 
                 
+    def get_spikes(self, T, sim_time):
+        # T = time up to
+        
+        stat_e = nest.GetStatus(self.e_spike_detector, 'events')[0]
+        stat_i = nest.GetStatus(self.i_spike_detector, 'events')[0]     
+        stat_input = nest.GetStatus(self.input_spike_detector, 'events')[0]
+        stat_output = nest.GetStatus(self.output_spike_detector, 'events')[0]
+
+        # stat_x['times'] is a one dimensional list of spike times
+        # stat_x['senders'] is a one dimensional list of gids 
+        # corresponding to the spike times
+        
+
+        #----------------------------------------------
+        # separating out the firings from the most 
+        # recent simulation 
+        #-----------------------------------------------
+        # (after time T)
+
+        times_e_indices  = np.argwhere( stat_e['times'] > T )[:,0]          
+        times_i_indices  = np.argwhere( stat_i['times'] > T )[:,0]         
+        times_input_indices = np.argwhere( stat_input['times'] > T )[:,0] 
+        times_output_indices = np.argwhere( stat_output['times'] > T )[:,0]
+        
+        times_e = stat_e['times'][times_e_indices]
+        times_i = stat_i['times'][times_i_indices]
+        times_input = stat_input['times'][times_input_indices]
+        times_output = stat_output['times'][times_output_indices]
+
+        senders_e  = stat_e['senders'][times_e_indices]
+        senders_i  = stat_i['senders'][times_i_indices]
+        senders_input = stat_input['senders'][times_input_indices]
+        senders_output = stat_output['senders'][times_output_indices]
+
+        spikes_e = times_e, senders_e
+        spikes_i = times_i, senders_i
+        spikes_input = times_input, senders_input
+        spikes_output = times_output, senders_output
+
+        # extract spike times in an array per neuron
+        e_spike_times = get_spike_times_by_id(spikes_e, self.e_population)
+        i_spike_times = get_spike_times_by_id(spikes_i, self.i_population)
+
+        input_spike_times = get_spike_times_by_id(spikes_input, 
+                                                  self.input_nodes)
+
+        output_spike_times = get_spike_times_by_id(spikes_output, 
+                                                   self.output_nodes)
+
+
+        if len(e_spike_times) == 0:
+            print('no spikes')
+            return
+
+        # compute mean firing rates
+        rate_e = len(times_e) * 1000.0 / (
+                sim_time * float(self.n_excitatory))
+        rate_i = len(times_i) * 1000.0 / (
+                sim_time * float(self.n_inhibitory))
+        rate_output = len(times_output) * 1000.0 / (
+                sim_time * float(self.n_outputs))
+
+        print('mean excitatory rate: {0:.2f} Hz'.format(rate_e))
+        print('mean inhibitory rate: {0:.2f} Hz'.format(rate_i))
+
+        return (e_spike_times, i_spike_times, input_spike_times, 
+               output_spike_times, (rate_e, rate_i, rate_output))
                
 
     def animate(self, 

@@ -9,12 +9,12 @@ endif
 set shortmess=aoO
 badd +300 main.py
 badd +308 game/game.py
-badd +82 snn/snn.py
+badd +68 snn/snn.py
 badd +2 snn/functions.py
 badd +3 workspace.sh
 badd +22 notes
 badd +65 ~/.config/nvim/init.vim
-badd +0 ~/repos/useful-stuff/testing/test.py
+badd +17 ~/repos/useful-stuff/testing/test.py
 argglobal
 %argdel
 $argadd main.py
@@ -25,10 +25,6 @@ wincmd _ | wincmd |
 vsplit
 1wincmd h
 wincmd w
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
 set nosplitbelow
 set nosplitright
 wincmd t
@@ -37,10 +33,7 @@ set winheight=1
 set winminwidth=0
 set winwidth=1
 exe 'vert 1resize ' . ((&columns * 102 + 105) / 211)
-exe '2resize ' . ((&lines * 18 + 20) / 40)
 exe 'vert 2resize ' . ((&columns * 108 + 105) / 211)
-exe '3resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 3resize ' . ((&columns * 108 + 105) / 211)
 argglobal
 setlocal fdm=manual
 setlocal fde=0
@@ -56,26 +49,8 @@ if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 501
-normal! 09|
-lcd ~/repos/spiking_AI
-wincmd w
-argglobal
-if bufexists("~/repos/useful-stuff/testing/test.py") | buffer ~/repos/useful-stuff/testing/test.py | else | edit ~/repos/useful-stuff/testing/test.py | endif
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal fen
-silent! normal! zE
-let s:l = 17 - ((12 * winheight(0) + 9) / 18)
-if s:l < 1 | let s:l = 1 | endif
-exe s:l
-normal! zt
-17
 normal! 0
+lcd ~/repos/spiking_AI
 wincmd w
 argglobal
 if bufexists("~/repos/spiking_AI/main.py") | buffer ~/repos/spiking_AI/main.py | else | edit ~/repos/spiking_AI/main.py | endif
@@ -88,19 +63,16 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 339 - ((5 * winheight(0) + 9) / 18)
+let s:l = 364 - ((5 * winheight(0) + 18) / 37)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-339
-normal! 029|
+364
+normal! 0
 wincmd w
-3wincmd w
+2wincmd w
 exe 'vert 1resize ' . ((&columns * 102 + 105) / 211)
-exe '2resize ' . ((&lines * 18 + 20) / 40)
 exe 'vert 2resize ' . ((&columns * 108 + 105) / 211)
-exe '3resize ' . ((&lines * 18 + 20) / 40)
-exe 'vert 3resize ' . ((&columns * 108 + 105) / 211)
 tabedit ~/repos/spiking_AI/snn/snn.py
 set splitbelow splitright
 wincmd _ | wincmd |
@@ -126,7 +98,7 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 68 - ((36 * winheight(0) + 18) / 37)
+let s:l = 68 - ((53 * winheight(0) + 27) / 54)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -144,7 +116,7 @@ setlocal fml=1
 setlocal fdn=20
 setlocal fen
 silent! normal! zE
-let s:l = 201 - ((18 * winheight(0) + 18) / 37)
+let s:l = 201 - ((26 * winheight(0) + 27) / 54)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt

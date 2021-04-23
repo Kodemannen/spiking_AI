@@ -253,6 +253,7 @@ def main():
             input_node_type='spike_generator'
             )
     snn.set_positions()
+    snn.get_conn_lines()
 
 
     #-------------------------------------------------
@@ -279,6 +280,12 @@ def main():
                                     # is fully covered by the obstacle
 
     T = 0       # accumulated time
+
+
+    #-------------------------------------------------
+    # data boxes:
+    #-------------------------------------------------
+    out_data_box = []
 
     #-------------------------------------------------
     # Start game loop
@@ -334,9 +341,12 @@ def main():
         #---------------------------------------------
         # Run snn simulation:
         #---------------------------------------------
-        snn.simulate(input_spikes=input_spikes,
-                    sim_time=sim_time,
-                    T=T)
+        sim_out = snn.simulate(input_spikes=input_spikes,
+                               sim_time=sim_time,
+                               T=T)
+
+        T += sim_time
+        #out_data_box.append(sim_out)
 
 
         #print(input_spikes) 
@@ -349,7 +359,6 @@ def main():
 
 
 
-        T += sim_time
         
 
 
@@ -380,7 +389,7 @@ def main():
         #exit('sd')
         print(T)
 
-        if T >= 10000:
+        if T >= 100000:
             playing = False
             game.quit_game()
 
@@ -388,9 +397,20 @@ def main():
     #---------------------------------------------
     # After game over:
     #---------------------------------------------
-    spikes = snn.get_spikes()
-    print(spikes)
+    spike_data = snn.get_spikes(T=T, sim_time=sim_time)
+    np.save('spike_data.npy', spike_data)
 
+    e_spike_times, i_spike_times, input_spike_times, output_spike_times, _ = spike_data
+    
+    e_spike_times = np.array(e_spike_times)
+    i_spike_times = np.array(i_spike_times)
+    input_spike_times = np.array(input_spike_times)
+    output_spike_times = np.array(output_spike_times)
+
+    snn.animate(e_spike_times,      # shape=(n_excitatory, spike_times) 
+                i_spike_times,      
+                input_spike_times, 
+                output_spike_times)
 
 
 
