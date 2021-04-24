@@ -15,6 +15,10 @@ from snn.snn import SNN
 #----------------------------------------------------------------------------------------------
 # Here I will control the snn instance and the game instance and feed information between them
 
+N_EXCITATORY = 13
+N_INHIBITORY = 5
+N_INPUTS     = 2
+N_OUTPUTS    = 2
 
 
 
@@ -154,6 +158,62 @@ def split_and_get_grid_lines(pixels, ):
     pass
     
     
+def concat_spikes(sim_data_box):
+
+    #spike_data = np.load(filename, allow_pickle=True)
+    e_spike_times_box = [np.array([]) for i in range(N_EXCITATORY)]
+    i_spike_times_box = [np.array([]) for i in range(N_INHIBITORY)]
+    input_spike_times_box = [np.array([]) for i in range(N_INPUTS)]
+    output_spike_times_box = [np.array([]) for i in range(N_OUTPUTS)]
+
+    #e_spike_times_box = np.array([[] for i in range(N_EXCITATORY)])
+    #i_spike_times_box       = np.array([[] for i in range(N_INHIBITORY)])
+    #input_spike_times_box   = np.array([[] for i in range(N_INPUTS)])
+    #output_spike_times_box  = np.array([[] for i in range(N_OUTPUTS)])
+
+    N = len(sim_data_box)
+    for i in range(N):
+
+        sim_data = sim_data_box[i]
+
+        e_spike_times, i_spike_times, input_spike_times, output_spike_times, _ = sim_data
+
+        # e_spike_times has dim = (n_excitatory, spike_times) 
+        #print(e_spike_times)
+
+        for j in range(N_EXCITATORY):
+            e_spike_times_box[j] = np.concatenate((e_spike_times_box[j], e_spike_times))
+
+        for j in range(N_INHIBITORY):
+            i_spike_times_box[j] = np.concatenate((e_spike_times_box[j], e_spike_times))
+
+        
+        for j in range(N_INPUTS):
+            input_spike_times_box[j] = np.concatenate((e_spike_times_box[j], e_spike_times))
+            
+
+        for j in range(N_OUTPUTS):
+            output_spike_times_box[j] = np.concatenate((e_spike_times_box[j], e_spike_times))
+
+
+        #print('-'*40)
+        #for j in range(N_INHIBITORY):
+        #    print(len(i_spike_times[j]))
+
+        #e_spike_times = np.concatenate(e_spike_times)
+        #
+
+        #
+        #exit('a')
+
+
+        #if i==2:
+        #    #print(e_spike_times.shape)
+        #    exit('hore')
+
+    return e_spike_times_box, i_spike_times_box, input_spike_times_box, output_spike_times_box
+
+
 
 
 def main():
@@ -177,8 +237,11 @@ def main():
     # simulation settings:
     #-------------------------------------------------
     dt = 0.1                        # time resolution
-    sim_time = 100                   # ms
+    sim_time = 1000                   # ms
 
+    iterations_before_sim = 5
+    # take the average of the pixels then?
+    # hmm
 
 
     #-------------------------------------------------
@@ -243,10 +306,10 @@ def main():
     # Create spiking neural network instance:
     #-------------------------------------------------
     snn = SNN(snn_config=None, 
-            n_excitatory=5, 
-            n_inhibitory=4, 
-            n_inputs=2, 
-            n_outputs=10, 
+            n_excitatory=N_EXCITATORY, 
+            n_inhibitory=N_INHIBITORY, 
+            n_inputs=N_INPUTS, 
+            n_outputs=N_OUTPUTS, 
             use_noise=False,
             dt=dt,
             #input_node_type='poisson_generator'
@@ -280,12 +343,13 @@ def main():
                                     # is fully covered by the obstacle
 
     T = 0       # accumulated time
+    counts = 0  # game/sim iterations
 
 
     #-------------------------------------------------
     # data boxes:
     #-------------------------------------------------
-    out_data_box = []
+    sim_data_box = []
 
     #-------------------------------------------------
     # Start game loop
@@ -313,6 +377,13 @@ def main():
 
 
         #---------------------------------------------
+        # we should run the snn after a set
+        # number of game iteration
+        #---------------------------------------------
+        
+
+
+        #---------------------------------------------
         # Here we must convert the pixels in any given
         # cell to spikes
         #---------------------------------------------
@@ -325,6 +396,7 @@ def main():
 
             # indexing to skip the edges
             inp_ratio = np.sum(splitted[i][1:-1,1:-1]) / max_val
+            inp_ratio = 0.3
 
             #-----------------------------------------
             # mapping the number of pixels inside the 
@@ -341,12 +413,22 @@ def main():
         #---------------------------------------------
         # Run snn simulation:
         #---------------------------------------------
-        sim_out = snn.simulate(input_spikes=input_spikes,
+        sim_data = snn.simulate(input_spikes=input_spikes,
                                sim_time=sim_time,
                                T=T)
 
+        e_spike_times = sim_data[0]     # (neuron[i], spiketimes) 
+
         T += sim_time
-        #out_data_box.append(sim_out)
+        counts += 1
+
+        #---------------------------------------------
+        # Collect data:
+        #---------------------------------------------
+        sim_data_box.append(sim_data)
+
+        
+        
 
 
         #print(input_spikes) 
@@ -389,7 +471,7 @@ def main():
         #exit('sd')
         print(T)
 
-        if T >= 100000:
+        if T >= 10000:
             playing = False
             game.quit_game()
 
@@ -397,6 +479,16 @@ def main():
     #---------------------------------------------
     # After game over:
     #---------------------------------------------
+
+    (e_spike_times, 
+     i_spike_times, 
+     input_spike_times, 
+     output_spike_times)    = concat_spikes(sim_data_box)
+
+    print(np.array(e_spike_times).shape)
+
+    exit('sd')
+
     spike_data = snn.get_spikes(T=T, sim_time=sim_time)
     np.save('spike_data.npy', spike_data)
 
