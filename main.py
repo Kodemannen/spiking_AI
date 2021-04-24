@@ -21,6 +21,8 @@ N_INPUTS     = 2
 N_OUTPUTS    = 2
 
 
+NEST_DATA_PATH = 'output/nest_data'
+
 
 
 def split_pixels(pixels, spacex=100, spacey=50):
@@ -313,7 +315,8 @@ def main():
             use_noise=False,
             dt=dt,
             #input_node_type='poisson_generator'
-            input_node_type='spike_generator'
+            input_node_type='spike_generator',
+            nest_data_path=NEST_DATA_PATH,
             )
     snn.set_positions()
     snn.get_conn_lines()

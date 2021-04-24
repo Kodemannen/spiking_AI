@@ -20,6 +20,7 @@ import json
 from .functions import *
 
 
+
 def __get_spike_times_by_id(idx, times, senders, scale):
     m = (senders == idx)
     return times[m] / scale
@@ -69,7 +70,8 @@ class SNN:
                  n_outputs=10, 
                  use_noise=False,
                  dt=0.1,
-                 input_node_type='spike_generator'):
+                 input_node_type='spike_generator', 
+                 nest_data_path=None):
         """
         Main pop : consists of excitatory and inhibitory synapses
         Input synapses: only excitatory synapses
@@ -89,16 +91,17 @@ class SNN:
         self.use_noise = use_noise
 
         nest.ResetKernel()
-        nest.SetKernelStatus(dict(
-                            resolution=dt,
-                            ))
+        nest.SetKernelStatus({'resolution': dt,
+                                "overwrite_files": True,
+                                "data_path": nest_data_path,
+                                "data_prefix": "", })
 
         
         #-----------------------------------------------
         # Loading parameters:
         #-----------------------------------------------
         with open('snn/default.json', 'r') as f:
-          default_cfg = json.load(f)
+            default_cfg = json.load(f)
 
         self.snn_conf = default_cfg.copy()
         if snn_config:
@@ -165,11 +168,31 @@ class SNN:
         #-----------------------------------------------
         # Creating spike detectors:
         #-----------------------------------------------
-        self.e_spike_detector = nest.Create('spike_detector')
-        self.i_spike_detector = nest.Create('spike_detector')
+        self.e_spike_detector = nest.Create('spike_detector',
+                                                params={'to_file': True, 
+                                                        'withgid': True,
+                                                        'label': 'e_spike_detector',
+                                                        'withtime': True})
 
-        self.input_spike_detector = nest.Create('spike_detector')
-        self.output_spike_detector = nest.Create('spike_detector')
+        self.i_spike_detector = nest.Create('spike_detector',
+                                                params={'to_file': True, 
+                                                        'withgid': True,
+                                                        'label': 'i_spike_detector',
+                                                        'withtime': True})
+
+        self.input_spike_detector = nest.Create('spike_detector',
+                                                params={'to_file': True, 
+                                                        'withgid': True,
+                                                        'label': 'input_spike_detector',
+                                                        'withtime': True})
+
+        self.output_spike_detector = nest.Create('spike_detector',
+                                                params={'to_file': True, 
+                                                        'withgid': True,
+                                                        'label': 'output_spike_detector',
+                                                        'withtime': True})
+
+                                        
 
         #-----------------------------------------------
         # Connection rules and parameters:
