@@ -184,7 +184,7 @@ def main():
     # simulation settings:
     #-------------------------------------------------
     dt = 0.1                        # time resolution
-    sim_time = 1000                   # ms
+    sim_time = 100                   # ms
 
     iterations_before_sim = 5
     # take the average of the pixels then?
@@ -373,9 +373,10 @@ def main():
         input_spike_times = sim_data[2]
         #output_spike_times = sim_data[3]
 
-        print(input_spike_times)
 
-        exit('aiaiiaa')
+        #print(input_spike_times)
+
+        #exit('aiaiiaa')
 
         T += sim_time
         counts += 1
@@ -426,7 +427,7 @@ def main():
         #exit('sd')
         print(T)
 
-        if T >= 10000:
+        if T >= 100000:
             playing = False
             game.quit_game()
 
@@ -437,6 +438,7 @@ def main():
 
     # So problem now is that we have no input spikes!
     # Why the fuck?
+    # Why then do we still get excitatory spikes?
 
 
     
@@ -446,19 +448,16 @@ def main():
 
 
     all_spike_data = snn.read_spikes_from_file()
-    print(all_spike_data)
 
-    exit('sd')
+    e_spike_times, i_spike_times, input_spike_times, output_spike_times  = all_spike_data.values()
+    #e_spike_times, i_spike_times, input_spike_times, output_spike_times, _  = sim_data
 
-    spike_data = snn.get_spikes(T=T, sim_time=sim_time)
-    np.save('spike_data.npy', spike_data)
 
-    e_spike_times, i_spike_times, input_spike_times, output_spike_times, _ = spike_data
     
-    e_spike_times = np.array(e_spike_times)
-    i_spike_times = np.array(i_spike_times)
-    input_spike_times = np.array(input_spike_times)
-    output_spike_times = np.array(output_spike_times)
+    #e_spike_times = np.array(e_spike_times)
+    #i_spike_times = np.array(i_spike_times)
+    #input_spike_times = np.array(input_spike_times)
+    #output_spike_times = np.array(output_spike_times)
 
 
     snn.animate(e_spike_times,      # shape=(n_excitatory, spike_times) 
