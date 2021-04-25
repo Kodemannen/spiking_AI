@@ -160,61 +160,6 @@ def split_and_get_grid_lines(pixels, ):
     pass
     
     
-def concat_spikes(sim_data_box):
-
-    #spike_data = np.load(filename, allow_pickle=True)
-    e_spike_times_box = [np.array([]) for i in range(N_EXCITATORY)]
-    i_spike_times_box = [np.array([]) for i in range(N_INHIBITORY)]
-    input_spike_times_box = [np.array([]) for i in range(N_INPUTS)]
-    output_spike_times_box = [np.array([]) for i in range(N_OUTPUTS)]
-
-    #e_spike_times_box = np.array([[] for i in range(N_EXCITATORY)])
-    #i_spike_times_box       = np.array([[] for i in range(N_INHIBITORY)])
-    #input_spike_times_box   = np.array([[] for i in range(N_INPUTS)])
-    #output_spike_times_box  = np.array([[] for i in range(N_OUTPUTS)])
-
-    N = len(sim_data_box)
-    for i in range(N):
-
-        sim_data = sim_data_box[i]
-
-        e_spike_times, i_spike_times, input_spike_times, output_spike_times, _ = sim_data
-
-        # e_spike_times has dim = (n_excitatory, spike_times) 
-        #print(e_spike_times)
-
-        for j in range(N_EXCITATORY):
-            e_spike_times_box[j] = np.concatenate((e_spike_times_box[j], e_spike_times))
-
-        for j in range(N_INHIBITORY):
-            i_spike_times_box[j] = np.concatenate((e_spike_times_box[j], e_spike_times))
-
-        
-        for j in range(N_INPUTS):
-            input_spike_times_box[j] = np.concatenate((e_spike_times_box[j], e_spike_times))
-            
-
-        for j in range(N_OUTPUTS):
-            output_spike_times_box[j] = np.concatenate((e_spike_times_box[j], e_spike_times))
-
-
-        #print('-'*40)
-        #for j in range(N_INHIBITORY):
-        #    print(len(i_spike_times[j]))
-
-        #e_spike_times = np.concatenate(e_spike_times)
-        #
-
-        #
-        #exit('a')
-
-
-        #if i==2:
-        #    #print(e_spike_times.shape)
-        #    exit('hore')
-
-    return e_spike_times_box, i_spike_times_box, input_spike_times_box, output_spike_times_box
-
 
 
 
@@ -307,6 +252,8 @@ def main():
     #-------------------------------------------------
     # Create spiking neural network instance:
     #-------------------------------------------------
+    sim_index = 0
+
     snn = SNN(snn_config=None, 
             n_excitatory=N_EXCITATORY, 
             n_inhibitory=N_INHIBITORY, 
@@ -317,6 +264,7 @@ def main():
             #input_node_type='poisson_generator'
             input_node_type='spike_generator',
             nest_data_path=NEST_DATA_PATH,
+            sim_index=sim_index,
             )
     snn.set_positions()
     snn.get_conn_lines()
@@ -420,16 +368,20 @@ def main():
                                sim_time=sim_time,
                                T=T)
 
-        e_spike_times = sim_data[0]     # (neuron[i], spiketimes) 
+        #e_spike_times = sim_data[0]     # (neuron[i], spiketimes) 
+        #i_spike_times = sim_data[1] 
+        input_spike_times = sim_data[2]
+        #output_spike_times = sim_data[3]
+
+        print(input_spike_times)
+
+        exit('aiaiiaa')
 
         T += sim_time
         counts += 1
 
-        #---------------------------------------------
-        # Collect data:
-        #---------------------------------------------
-        sim_data_box.append(sim_data)
 
+        #input('press key')
         
         
 
@@ -483,12 +435,18 @@ def main():
     # After game over:
     #---------------------------------------------
 
-    (e_spike_times, 
-     i_spike_times, 
-     input_spike_times, 
-     output_spike_times)    = concat_spikes(sim_data_box)
+    # So problem now is that we have no input spikes!
+    # Why the fuck?
 
-    print(np.array(e_spike_times).shape)
+
+    
+    # problem seems to be that the files are overwritten each simulate()
+    # not a problem yet, but maybe it could be.. not sure..
+    # if this is the problem --> need to get it to append to the file instead
+
+
+    all_spike_data = snn.read_spikes_from_file()
+    print(all_spike_data)
 
     exit('sd')
 
@@ -501,6 +459,7 @@ def main():
     i_spike_times = np.array(i_spike_times)
     input_spike_times = np.array(input_spike_times)
     output_spike_times = np.array(output_spike_times)
+
 
     snn.animate(e_spike_times,      # shape=(n_excitatory, spike_times) 
                 i_spike_times,      

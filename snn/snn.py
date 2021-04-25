@@ -16,6 +16,7 @@ import seaborn as sns
 sns.set()
 
 import json
+import os
 
 from .functions import *
 
@@ -71,7 +72,8 @@ class SNN:
                  use_noise=False,
                  dt=0.1,
                  input_node_type='spike_generator', 
-                 nest_data_path=None):
+                 nest_data_path=None,
+                 sim_index=0):
         """
         Main pop : consists of excitatory and inhibitory synapses
         Input synapses: only excitatory synapses
@@ -90,13 +92,23 @@ class SNN:
         self.dt = dt
         self.use_noise = use_noise
 
+        self.sim_index = sim_index
+        self.nest_data_path = nest_data_path
+
+        #-----------------------------------------------
+        # Kernel stuff:
+        #-----------------------------------------------
+        self.num_cpu = mp.cpu_count()
         nest.ResetKernel()
         nest.SetKernelStatus({'resolution': dt,
                                 "overwrite_files": True,
                                 "data_path": nest_data_path,
-                                "data_prefix": "", })
+                                "data_prefix": "", 
+                                'local_num_threads': self.num_cpu,
+                                'print_time': False})
 
         
+
         #-----------------------------------------------
         # Loading parameters:
         #-----------------------------------------------
@@ -168,28 +180,29 @@ class SNN:
         #-----------------------------------------------
         # Creating spike detectors:
         #-----------------------------------------------
+        ind = sim_index
         self.e_spike_detector = nest.Create('spike_detector',
                                                 params={'to_file': True, 
                                                         'withgid': True,
-                                                        'label': 'e_spike_detector',
+                                                        'label': f'e_spike_detector-{ind}',
                                                         'withtime': True})
 
         self.i_spike_detector = nest.Create('spike_detector',
                                                 params={'to_file': True, 
                                                         'withgid': True,
-                                                        'label': 'i_spike_detector',
+                                                        'label': f'i_spike_detector-{ind}',
                                                         'withtime': True})
 
         self.input_spike_detector = nest.Create('spike_detector',
                                                 params={'to_file': True, 
                                                         'withgid': True,
-                                                        'label': 'input_spike_detector',
+                                                        'label': f'input_spike_detector-{ind}',
                                                         'withtime': True})
 
         self.output_spike_detector = nest.Create('spike_detector',
                                                 params={'to_file': True, 
                                                         'withgid': True,
-                                                        'label': 'output_spike_detector',
+                                                        'label': f'output_spike_detector-{ind}',
                                                         'withtime': True})
 
                                         
@@ -541,6 +554,60 @@ class SNN:
         nest.SetStatus(self.input_nodes, input_spike_times)
 
         return self.__run_simulation(sim_time, T=T)
+
+
+
+    def read_spikes_from_file(self):
+
+
+        all_spike_data = {}
+
+        keys = ['e_spikes', 'i_spikes', 'input_spikes', 'output_spikes']
+
+        labels = [f'e_spike_detector-{self.sim_index}', 
+                  f'i_spike_detector-{self.sim_index}',
+                  f'input_spike_detector-{self.sim_index}',
+                  f'output_spike_detector-{self.sim_index}']
+
+        sd_gids = (self.e_spike_detector[0], 
+                   self.i_spike_detector[0], 
+                   self.input_spike_detector[0], 
+                   self.output_spike_detector[0])
+
+
+        for i in range(len(labels)):
+            label = labels[i]                   # contains sim_index
+            key   = keys[i] 
+            print(key)
+
+            for vp in range(self.num_cpu):      # vp = virtual process
+
+                filename = label + f'-{sd_gids[i]}-{vp:02d}.gdf' 
+
+
+                with open(os.path.join(self.nest_data_path, filename), 'r') as file:
+
+                    dataarray = []
+                    for line in file:
+                        linearray = list(map(float, line.split()))      # gid, t, V_m
+                        dataarray.append(linearray)
+
+
+
+            dataarray = np.array(dataarray)
+            print(dataarray)
+
+            GIDs = dataarray[:,0] if dataarray.size > 0 else []
+            spike_times    = dataarray[:,1] if dataarray.size > 0 else []
+            #V_m  = dataarray[:,2] if dataarray.size > 0 else []
+            
+
+            all_spike_data[key] = GIDs, spike_times 
+
+
+        return all_spike_data
+
+
 
 
     
