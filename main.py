@@ -13,8 +13,12 @@ from snn.snn import SNN
 
 
 #----------------------------------------------------------------------------------------------
-# Here I will control the snn instance and the game instance and feed information between them
+# This script controls the snn and game instances and feed information between them
+#----------------------------------------------------------------------------------------------
 
+#----------------------------------------
+# snn hyper parameters:
+#----------------------------------------
 N_EXCITATORY = 13
 N_INHIBITORY = 5
 N_INPUTS     = 2
@@ -22,6 +26,25 @@ N_OUTPUTS    = 2
 
 
 NEST_DATA_PATH = 'output/nest_data'
+
+
+
+#-------------------------------------------------
+# Game hyper-parameters:
+#-------------------------------------------------
+N_LANES = 2
+N_CELLS_PER_LANE = 8            # must be even      
+INPUT_CELL_INDICES = [6, 14]    # indices of the cells in the background grid
+                                # that are used as input to the snn
+
+
+
+#-------------------------------------------------
+# animation settings: 
+#-------------------------------------------------
+FPS = 30                        
+
+
 
 
 
@@ -40,8 +63,8 @@ def split_pixels(pixels, spacex=100, spacey=50):
         spacey              : integer       | vertical cell size
 
     '''
-    #spacex = win_size[0]/n_cells_per_lane             # horizontal cell space 
-    #spacey = win_size[1]/n_lanes                        # vertical cell space
+    #spacex = win_size[0]/N_CELLS_PER_LANE             # horizontal cell space 
+    #spacey = win_size[1]/N_LANES                        # vertical cell space
 
 
     img_length = pixels.shape[1]            # integer 
@@ -84,51 +107,6 @@ def get_input_vector(pixels, spacex, spacey):
 
 
 
-def create_grid_line_box(n_lanes, n_cells_per_lane, win_size):
-    '''
-
-    Creates a list containing the lines of a grid
-
-    -----------------------------------------------------------------
-    Input argument              : Type          | Description 
-    -----------------------------------------------------------------
-
-        n_lanes                 : integer       | number of car lanes
-        n_cells_per_lane      : integer       | neurons per car lane
-
-    '''
-
-    n_vertical_lines   = n_cells_per_lane + 1
-    n_horizontal_lines = n_lanes + 1
-
-    spacex = win_size[0]/n_cells_per_lane             # horizontal cell space 
-    spacey = win_size[1]/n_lanes                        # vertical cell space
-
-    startx = 0                                          # left vertical edge
-    starty = 0                                          # top horizontal edge
-
-    endx = startx + spacex*n_cells_per_lane           # right vertical edge
-    endy = starty + spacey*n_lanes                      # bottom horizontal edge 
-
-    line_box = []
-
-    # Generating vertical lines:
-    for i in range(n_vertical_lines):
-
-        x = spacex*i + startx
-
-        line = [(x, starty), (x, endy)]
-        line_box.append(line)
-
-    # Generating horizontal lines:
-    for i in range(n_horizontal_lines):
-
-        y = spacey*i + starty
-
-        line = [(startx, y), (endx, y)]
-        line_box.append(line)
-
-    return np.array(line_box)
 
 
 
@@ -156,10 +134,6 @@ def plot_grid(ax, line_box, auto_adjust=True):
 
 
 
-def split_and_get_grid_lines(pixels, ):
-    pass
-    
-    
 
 
 
@@ -184,39 +158,22 @@ def main():
     # simulation settings:
     #-------------------------------------------------
     dt = 0.1                        # time resolution
-    sim_time = 100                   # ms
+    sim_time = 100                  # ms
 
     iterations_before_sim = 5
     # take the average of the pixels then?
     # hmm
+    # yes
 
-
-    #-------------------------------------------------
-    # animation settings: 
-    #-------------------------------------------------
-    fps = 30                        
 
 
 
     #-------------------------------------------------
-    # hyper-parameters:
+    # Get sizes/spaces of the cells in the grid:
     #-------------------------------------------------
-    n_lanes = 2
-    n_cells_per_lane = 8          # must be even      
-
-
-
-    #-------------------------------------------------
-    # create background grid:
-    #-------------------------------------------------
-
-    spacex = int(win_width  / n_cells_per_lane)             # horizontal cell space
-    spacey = int(win_height / n_lanes)                        # vertical cell space
+    spacex = int(win_width  / N_CELLS_PER_LANE)             # horizontal cell space
+    spacey = int(win_height / N_LANES)                      # vertical cell space
     cell_size = spacex*spacey
-
-    line_box = create_grid_line_box(n_lanes, 
-                                    n_cells_per_lane, 
-                                    win_size)
 
 
     #-------------------------------------------------
@@ -227,24 +184,37 @@ def main():
 
     game = CarGame(win_size,
                     obstacle_size=(obstacle_width, obstacle_height),
-                    n_lanes=n_lanes)
+                    n_lanes=N_LANES,
+                    n_cells_per_lane=N_CELLS_PER_LANE,
+                    )
 
+    game.add_background_lines()
+
+    
 
 
     #-------------------------------------------------
     # Add background grid
     #-------------------------------------------------
-    game.add_background_lines(background_lines=line_box) 
+    #game.add_background_lines(background_lines=line_box) 
+
+
+    #-------------------------------------------------
+    # Highlight the field-of-view of the snn
+    #-------------------------------------------------
+    # game.create_fov_lines(INPUT_CELL_INDICES,
+    #                       spacex,
+    #                       spacey) 
 
 
 
     dpi = 150
-    fig, ax = plt.subplots(figsize=np.array(win_size)/dpi)
-    plot_grid(ax, line_box)
+    # fig, ax = plt.subplots(figsize=np.array(win_size)/dpi)
+    # plot_grid(ax, line_box)
 
-    plt.axis('off')
-    plt.tight_layout()
-    plt.savefig('testfig.png')
+    # plt.axis('off')
+    # plt.tight_layout()
+    # plt.savefig('testfig.png')
     #exit('jall')
     
 
@@ -276,8 +246,9 @@ def main():
                                     # unit:
     # set velocity so that it 
     # moves one neuron box 
-    game.obstacle_vel = spacex/1      # pixels
-    game.delay_ms     = 10        # ms
+    game.obstacle_vel = spacex/1    # pixels
+    game.delay_ms     = 10          # ms
+    frame_batch_size  = 4           # number of frames before we feed data to snn
 
     
     #-------------------------------------------------
@@ -288,7 +259,7 @@ def main():
     game.obstacle_height = spacey
 
     obstacle_sum = spacex*spacey    # this should be approximately
-                                    # equal to the sum of 1s in 
+                                    # equal to the sum of 1's in 
                                     # a grid square, i.e. what a
                                     # neuron sees when the square
                                     # is fully covered by the obstacle
@@ -302,16 +273,30 @@ def main():
     #-------------------------------------------------
     sim_data_box = []
 
+
+
     #-------------------------------------------------
     # Start game loop
     #-------------------------------------------------
     game.playing = True
     while game.playing:
 
+
+        pixels_sum = 0
+
         game.play_one_step()
+
+
+        # Can sum the pixels over the frame batch 
+        # then the pixels that appear in the most will have the highest 
+        # value. Like a long exposure on a camera.
+
 
         pixels = game.get_pixels()  # input for the snn
         #print(pixels.shape) 
+
+
+        
 
         pixels = pixels.T.astype(np.float)
         pixels[:,:] /= 10053375     # normalized to contain values in (0, 1)
@@ -322,6 +307,8 @@ def main():
 
 
         splitted = split_pixels(pixels, spacex, spacey)     # (n_cells, *cell_shape)
+
+
         print(np.sum(splitted[6]))
         print(np.sum(splitted[14]))
 
@@ -332,7 +319,11 @@ def main():
         # number of game iteration
         #---------------------------------------------
         
-
+        ######  ####   ####    #### 
+          ##   ##  ##  ##  #  ##  ## 
+          ##   ##  ##  ##  #  ##  ## 
+          ##   ##  ##  ##  #  ##  ## 
+          ##    ####   ####    ####
 
         #---------------------------------------------
         # Here we must convert the pixels in any given
@@ -342,12 +333,11 @@ def main():
         max_val = cell_size
         input_spikes = []
 
-        input_indices = [6, 14]
-        for i in input_indices:
+        for i in INPUT_CELL_INDICES:
 
             # indexing to skip the edges
             inp_ratio = np.sum(splitted[i][1:-1,1:-1]) / max_val
-            inp_ratio = 0.3
+            #inp_ratio = 0.3
 
             #-----------------------------------------
             # mapping the number of pixels inside the 
@@ -425,11 +415,11 @@ def main():
         #plt.imshow(np.flip(pixels, axis=0))
         #plt.savefig('testfig.png')
         #exit('sd')
-        print(T)
+        #print(T)
 
-        if T >= 100000:
-            playing = False
-            game.quit_game()
+        #if T >= 1000000:
+        #    playing = False
+        #    game.quit_game()
 
 
     #---------------------------------------------

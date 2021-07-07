@@ -54,19 +54,26 @@ class CarGame:
     def __init__(self, 
                 win_size, 
                 obstacle_size,
-                n_lanes):
+                n_lanes,
+                n_cells_per_lane,
+                background_lines=True):
 
 
         pg.init()
+
 
         self._running = False
         #self.win_size = self.win_width, self.win_height = 800, 100
         self.win_size = self.win_width, self.win_height = win_size
 
+        #--------------------------------
+        # main screen surface:
+        #--------------------------------
         self.win = pg.display.set_mode(self.win_size)
         self.delay_ms = 10
 
         self.n_lanes = n_lanes
+        self.n_cells_per_lane = n_cells_per_lane
 
 
 
@@ -413,15 +420,14 @@ class CarGame:
         return surface_array
 
 
-    def add_background_lines(self, background_lines):
-        self.background_lines = background_lines
+    def add_background_lines(self):
+        self.background_lines = self.create_grid_line_box()
         self.background_lines_on = True
 
         return
 
 
     def draw_background_lines(self):
-
 
 
         #---------------------------------------------
@@ -448,9 +454,106 @@ class CarGame:
                          end_line, 
                          line_width)
 
+
+    def create_grid_line_box(self):
+        '''
+
+        Creates a list containing the lines of a grid
+
+        -----------------------------------------------------------------
+        Input argument              : Type          | Description 
+        -----------------------------------------------------------------
+
+            n_lanes                 : integer       | number of car lanes
+            n_cells_per_lane      : integer       | neurons per car lane
+
+        '''
+
+        n_cells_per_lane = self.n_cells_per_lane
+        n_lanes = self.n_lanes
+        win_size = self.win_size
+
+        n_vertical_lines   = n_cells_per_lane + 1
+        n_horizontal_lines = n_lanes + 1
+
+        spacex = win_size[0]/n_cells_per_lane             # horizontal cell space 
+        spacey = win_size[1]/n_lanes                        # vertical cell space
+
+        startx = 0                                          # left vertical edge
+        starty = 0                                          # top horizontal edge
+
+        endx = startx + spacex*n_cells_per_lane           # right vertical edge
+        endy = starty + spacey*n_lanes                      # bottom horizontal edge 
+
+        line_box = []
+
+        # Generating vertical lines:
+        for i in range(n_vertical_lines):
+
+            x = spacex*i + startx
+
+            line = [(x, starty), (x, endy)]
+            line_box.append(line)
+
+        # Generating horizontal lines:
+        for i in range(n_horizontal_lines):
+
+            y = spacey*i + starty
+
+            line = [(startx, y), (endx, y)]
+            line_box.append(line)
+
+        return np.array(line_box)
+
+
         
+    def create_fov_lines(self, 
+                         chosen_cells, 
+                         spacex, 
+                         spacey):
+
+        #---------------------------------------------
+        # Adds a different color for edges of the 
+        # cells in the background grid that the snn
+        # sees
+        #---------------------------------------------
+
+        # These could be useful:
+        # self.win_width 
+        # self.win_height
+        # self.n_lanes 
+        # self.n_cells_per_lane 
+
+        # indexes count from top left to bottom right
+        # i.e. there are n_
+
+        fov_lines = []
+
+        for ind in chosen_cells:
+
+            # get the xy coordinate in the grid:
+            x_index = ind % self.n_cells_per_lane 
+            y_index = ind // self.n_lanes
+
+            # create four lines for the cell:
+            line1h = [[spacex*x_index, spacey*y_index], 
+                      [spacex*(x_index+1), spacey*y_index]]
+
+            line2h = [[spacex*x_index, spacey*(y_index+1)], 
+                      [spacex*(x_index+1), spacey*(y_index+1)]]
+
+            line1v = [[spacex*x_index, spacey*y_index], 
+                      [spacex*x_index, spacey*(y_index+1)]]
+
+            line2v = [[spacex*(x_index+1), spacey*y_index], 
+                      [spacex*(x_index+1), spacey*(y_index+1)]]
+        
+            fov_lines.append([line1h, line2h, line1v, line2v])
+
+        return fov_lines
 
  
+
 if __name__ == "__main__" :
     #game = JumpGame()
     #game.play()
