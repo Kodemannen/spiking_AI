@@ -1,2 +1,3 @@
 output*
-__pycache__
+game/__pycache__
+snn/__pycache__
