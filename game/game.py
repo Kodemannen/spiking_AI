@@ -66,6 +66,10 @@ class CarGame:
         #self.win_size = self.win_width, self.win_height = 800, 100
         self.win_size = self.win_width, self.win_height = win_size
 
+
+        self.spacex = int(self.win_width  / n_cells_per_lane)       # horizontal cell space
+        self.spacey = int(self.win_height / n_lanes)                # vertical cell space
+
         #--------------------------------
         # main screen surface:
         #--------------------------------
@@ -324,6 +328,8 @@ class CarGame:
     def render_background(self):
         if self.background_lines_on:
             self.draw_background_lines()
+        if self.fov_lines_on:
+            self.draw_fov_lines()
         return
 
 
@@ -458,7 +464,7 @@ class CarGame:
     def create_grid_line_box(self):
         '''
 
-        Creates a list containing the lines of a grid
+        Creates a list containing the lines of the background grid
 
         -----------------------------------------------------------------
         Input argument              : Type          | Description 
@@ -506,11 +512,44 @@ class CarGame:
         return np.array(line_box)
 
 
+    def add_fov_lines(self, chosen_cells):
+
+        self.fov_lines = self.create_fov_lines(chosen_cells)
+        self.fov_lines_on = True
+
+        return
+
+    def draw_fov_lines(self):
+
+
+        #---------------------------------------------
+        # - Draws a background grid that indicates the pixels 
+        #     - Using pg.draw.lines()
+        # - Assumes that self.grid exists
+        #---------------------------------------------
+
+        line_color = (255, 255, 255)    # RGB
+        line_width = 10                  # 1 is default
+
+        n_tot_lines = len(self.fov_lines)
+
+        for i in range(n_tot_lines):
+
+            line = self.fov_lines[i]
+
+            start_line = line[0]        # (x, y) coordinate
+            end_line   = line[1]        # (x, y) coordinate
+
+            pg.draw.line(self.win, 
+                         line_color, 
+                         start_line, 
+                         end_line, 
+                         line_width)
         
+
+
     def create_fov_lines(self, 
-                         chosen_cells, 
-                         spacex, 
-                         spacey):
+                         chosen_cells):
 
         #---------------------------------------------
         # Adds a different color for edges of the 
@@ -524,6 +563,9 @@ class CarGame:
         # self.n_lanes 
         # self.n_cells_per_lane 
 
+        spacex = self.spacex
+        spacey = self.spacey
+
         # indexes count from top left to bottom right
         # i.e. there are n_
 
@@ -533,23 +575,32 @@ class CarGame:
 
             # get the xy coordinate in the grid:
             x_index = ind % self.n_cells_per_lane 
-            y_index = ind // self.n_lanes
+            y_index = ind // self.n_cells_per_lane
+            print(x_index, y_index) 
+
+
 
             # create four lines for the cell:
-            line1h = [[spacex*x_index, spacey*y_index], 
-                      [spacex*(x_index+1), spacey*y_index]]
+            line1h = [( spacex*x_index, spacey*y_index ), 
+                      ( spacex*(x_index+1), spacey*y_index )]
 
-            line2h = [[spacex*x_index, spacey*(y_index+1)], 
-                      [spacex*(x_index+1), spacey*(y_index+1)]]
+            line2h = [( spacex*x_index, spacey*(y_index+1) ), 
+                      ( spacex*(x_index+1), spacey*(y_index+1) )]
 
-            line1v = [[spacex*x_index, spacey*y_index], 
-                      [spacex*x_index, spacey*(y_index+1)]]
+            line1v = [( spacex*x_index, spacey*y_index ), 
+                      ( spacex*x_index, spacey*(y_index+1) )]
 
-            line2v = [[spacex*(x_index+1), spacey*y_index], 
-                      [spacex*(x_index+1), spacey*(y_index+1)]]
+            line2v = [( spacex*(x_index+1), spacey*y_index ), 
+                      ( spacex*(x_index+1), spacey*(y_index+1) )]
         
-            fov_lines.append([line1h, line2h, line1v, line2v])
+            fov_lines.append(line1h)
+            fov_lines.append(line2h)
+            fov_lines.append(line1v)
+            fov_lines.append(line2v)
 
+        fov_lines = np.array(fov_lines) + 0
+
+        #exit('horea')
         return fov_lines
 
  

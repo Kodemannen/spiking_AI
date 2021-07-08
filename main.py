@@ -183,12 +183,13 @@ def main():
     obstacle_height= spacey
 
     game = CarGame(win_size,
-                    obstacle_size=(obstacle_width, obstacle_height),
-                    n_lanes=N_LANES,
-                    n_cells_per_lane=N_CELLS_PER_LANE,
-                    )
+                   obstacle_size=(obstacle_width, obstacle_height),
+                   n_lanes=N_LANES,
+                   n_cells_per_lane=N_CELLS_PER_LANE,
+                   )
 
     game.add_background_lines()
+    game.add_fov_lines(chosen_cells=INPUT_CELL_INDICES)
 
     
 
