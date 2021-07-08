@@ -34,9 +34,10 @@ NEST_DATA_PATH = 'output/nest_data'
 #-------------------------------------------------
 N_LANES = 2
 N_CELLS_PER_LANE = 8            # must be even      
-INPUT_CELL_INDICES = [6, 14]    # indices of the cells in the background grid
+INPUT_CELL_INDICES = [5, 13] # indices of the cells in the background grid
                                 # that are used as input to the snn
 
+assert N_INPUTS == len(INPUT_CELL_INDICES)
 
 
 #-------------------------------------------------
