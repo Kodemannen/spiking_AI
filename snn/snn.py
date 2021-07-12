@@ -18,7 +18,11 @@ sns.set()
 import json
 import os
 
-from .functions import *
+
+if __name__=="__main__":
+    from functions import *
+else:
+    from .functions import *
 
 
 
@@ -72,7 +76,8 @@ class SNN:
                  use_noise=False,
                  dt=0.1,
                  input_node_type='spike_generator', 
-                 nest_data_path=None,
+                 nest_data_path="",
+                 json_path="default.json",
                  sim_index=0):
         """
         Main pop : consists of excitatory and inhibitory synapses
@@ -119,7 +124,7 @@ class SNN:
         #-----------------------------------------------
         # Loading parameters:
         #-----------------------------------------------
-        with open('snn/default.json', 'r') as f:
+        with open(json_path, 'r') as f:
             default_cfg = json.load(f)
 
         self.snn_conf = default_cfg.copy()
@@ -799,12 +804,13 @@ def run():
               n_inhibitory=5, 
               n_inputs=6, 
               n_outputs=2,
+              nest_data_path="junk"
               )
 
     #----------------------------------------------------------------------
     # Initializing positions:
     #----------------------------------------------------------------------
-    snn.set_positions(seed=2,#seed=np.random.randint(low=0,high=10e7),
+    snn.set_positions(seed=np.random.randint(low=0,high=10e7),
 
                       radius_e=0.8, 
                       radius_i=0.5, 

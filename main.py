@@ -16,26 +16,28 @@ from snn.snn import SNN
 # This script controls the snn and game instances and feed information between them
 #----------------------------------------------------------------------------------------------
 
-#----------------------------------------
-# snn hyper parameters:
-#----------------------------------------
-N_EXCITATORY = 13
-N_INHIBITORY = 5
-N_INPUTS     = 2
-N_OUTPUTS    = 2
-
-
-NEST_DATA_PATH = 'output/nest_data'
-
-
-
 #-------------------------------------------------
 # Game hyper-parameters:
 #-------------------------------------------------
 N_LANES = 2
 N_CELLS_PER_LANE = 8            # must be even      
-INPUT_CELL_INDICES = [5, 13] # indices of the cells in the background grid
+INPUT_CELL_INDICES = [6, 14] # indices of the cells in the background grid
                                 # that are used as input to the snn
+
+#----------------------------------------
+# snn hyper parameters:
+#----------------------------------------
+N_EXCITATORY = 13
+N_INHIBITORY = 5
+N_INPUTS     = len(INPUT_CELL_INDICES)
+N_OUTPUTS    = 2
+
+
+NEST_DATA_PATH = 'output/nest_data'
+JSON_PATH  = 'snn/default.json'
+
+
+
 
 assert N_INPUTS == len(INPUT_CELL_INDICES)
 
@@ -141,12 +143,12 @@ def plot_grid(ax, line_box, auto_adjust=True):
 def main():
     
 
-            #####  ##### ###### ##  ##  ####
-            #      ##      ##   ##  ##  ##  #
-            #####  ####    ##   ##  ##  ####
-                #  ##      ##   ##  ##  ##
-            #####  #####   ##   ######  ##
-
+    #     ____       _               
+    #    / ___|  ___| |_ _   _ _ __  
+    #    \___ \ / _ \ __| | | | '_ \ 
+    #     ___) |  __/ |_| |_| | |_) |
+    #    |____/ \___|\__|\__,_| .__/ 
+    #                         |_|    
 
     #-------------------------------------------------
     # Game settings:
@@ -236,6 +238,7 @@ def main():
             #input_node_type='poisson_generator'
             input_node_type='spike_generator',
             nest_data_path=NEST_DATA_PATH,
+            json_path=JSON_PATH,
             sim_index=sim_index,
             )
     snn.set_positions()
@@ -277,9 +280,13 @@ def main():
 
 
 
-    #-------------------------------------------------
-    # Start game loop
-    #-------------------------------------------------
+    #       ____                        _                   
+    #      / ___| __ _ _ __ ___   ___  | | ___   ___  _ __  
+    #     | |  _ / _` | '_ ` _ \ / _ \ | |/ _ \ / _ \| '_ \ 
+    #     | |_| | (_| | | | | | |  __/ | | (_) | (_) | |_) |
+    #      \____|\__,_|_| |_| |_|\___| |_|\___/ \___/| .__/ 
+    #                                                |_|    
+
     game.playing = True
     while game.playing:
 
@@ -360,10 +367,28 @@ def main():
                                sim_time=sim_time,
                                T=T)
 
-        #e_spike_times = sim_data[0]     # (neuron[i], spiketimes) 
-        #i_spike_times = sim_data[1] 
-        input_spike_times = sim_data[2]
-        #output_spike_times = sim_data[3]
+        # e_spike_times = sim_data[0]     # (neuron[i], spiketimes) 
+        # i_spike_times = sim_data[1] 
+        # input_spike_times = sim_data[2]
+        output_spike_times = np.array(sim_data[3])
+        print(output_spike_times.shape) 
+
+        #rate_output = sim_data[4][2]   # avgeraged across neurons
+
+
+        #---------------------------------------------
+        # Make decision based on activity: 
+        #---------------------------------------------
+        
+        # must choose some firing rate threshold
+        # or we could have a node for "do nothing"
+        
+        threshold = 40  # hz
+        print(output_spike_times, "-"*20)
+
+
+
+        #exit("fifasd")
 
 
         #print(input_spike_times)

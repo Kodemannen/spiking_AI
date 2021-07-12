@@ -136,8 +136,6 @@ class CarGame:
         #self.obstacle_size = (7, 40)              # width, height 
 
 
-
-
         #self.obstacle_width, self.obstacle_height = self.obstacle_size
 
         
@@ -147,6 +145,7 @@ class CarGame:
         # Background stuff
         #--------------------------------
         self.background_lines_on = False
+        self.fov_lines_on = False
         
 
     def update_player(self, keys):
@@ -529,7 +528,8 @@ class CarGame:
         #---------------------------------------------
 
         line_color = (255, 255, 255)    # RGB
-        line_width = 10                  # 1 is default
+        line_color = (66, 185, 245)
+        line_width = 1                  # 1 is default
 
         n_tot_lines = len(self.fov_lines)
 
@@ -598,9 +598,6 @@ class CarGame:
             fov_lines.append(line1v)
             fov_lines.append(line2v)
 
-        fov_lines = np.array(fov_lines) + 0
-
-        #exit('horea')
         return fov_lines
 
  
