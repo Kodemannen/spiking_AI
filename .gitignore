@@ -1,3 +1,4 @@
 output*
 game/__pycache__
 snn/__pycache__
+snn/junk/*

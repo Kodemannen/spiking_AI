@@ -780,7 +780,9 @@ class SNN:
         writer = Writer(fps=fps, metadata=dict(artist="Me"), bitrate=850)
 
         ani = animation.FuncAnimation(fig, update_frame, indices)   #, fargs=(count,indices))
-        ani.save("spiking_anim.mp4", writer=writer, dpi=150)
+
+        plt.show()
+        #ani.save("spiking_anim.mp4", writer=writer, dpi=150)
 
 
 
@@ -835,6 +837,8 @@ def run():
         snn.plot_connectome(ax)
         #plt.legend(loc=4)
         plt.savefig('test.png')
+        plt.close()
+
 
 
 

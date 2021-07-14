@@ -386,67 +386,10 @@ def main():
         threshold = 40  # hz
         print(output_spike_times, "-"*20)
 
-
-
-        #exit("fifasd")
-
-
-        #print(input_spike_times)
-
-        #exit('aiaiiaa')
-
         T += sim_time
         counts += 1
 
 
-        #input('press key')
-        
-        
-
-
-        #print(input_spikes) 
-        #for i in range(len(input_spikes)):
-        #    input_spikes[i]     # need to 
-
-        #exit('asd')
-
-        #exit('jalla')
-
-
-
-        
-
-
-        #for ting in splitted:
-        #    print(ting)
-        #    print(np.sum(ting))
-        #    print(ting.shape)
-
-        #    #exit('asd')
-
-        #print('==================')
-
-
-        #print(splitted.shape) 
-
-        #neuron1 = pixels[0:50,400:500]
-        #neuron2 = pixels[50:100,400:500]
-
-        #neurons = [neuron1, neuron2]
-
-        #firing_rates = np.sum(neurons, axis=(1,2))
-
-        #snn.simulate()
-
-
-        #plt.imshow(np.flip(pixels, axis=0))
-        #plt.savefig('testfig.png')
-        #exit('sd')
-        #print(T)
-
-        #if T >= 1000000:
-        #    playing = False
-        #    game.quit_game()
 
 
     #---------------------------------------------
